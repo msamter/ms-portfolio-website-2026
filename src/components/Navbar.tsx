@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { Menu, X } from 'lucide-react';
 import { isModifiedEvent, withBase } from '../utils/paths';
+import { usePortfolioAnalytics } from '../hooks/usePortfolioAnalytics';
 
 interface NavbarProps {
   currentRoute: string;
@@ -24,6 +25,7 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({
   currentRoute,
   onNavigate,
 }) => {
+  const { trackWorkNavClick } = usePortfolioAnalytics();
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const headerRef = useRef<HTMLElement | null>(null);
@@ -81,14 +83,21 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({
   }, [mobileMenuOpen]);
 
   const handleLinkClick = useCallback(
-    (event: React.MouseEvent<HTMLAnchorElement>, targetPath: string) => {
+    (
+      event: React.MouseEvent<HTMLAnchorElement>,
+      targetPath: string,
+      navSurface?: 'navbar_desktop' | 'navbar_mobile'
+    ) => {
+      if (targetPath === WORK_ROUTE && navSurface) {
+        trackWorkNavClick(navSurface, targetPath);
+      }
       if (isModifiedEvent(event)) return;
       event.preventDefault();
       event.currentTarget.blur();
       setMobileMenuOpen(false);
       onNavigate(targetPath);
     },
-    [onNavigate]
+    [onNavigate, trackWorkNavClick]
   );
 
   const isRouteActive = (path: string) => {
@@ -107,9 +116,9 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({
           : 'bg-alabaster border-b border-transparent'
       }`}
     >
-      <div className="mx-auto flex max-w-[1100px] items-center justify-between gap-4 px-6 py-5 sm:px-10">
+      <div className="mx-auto flex max-w-[1100px] items-center justify-between gap-3 px-5 py-4 sm:gap-4 sm:px-10 sm:py-5">
         {/* Left: Only MS links to Home; "/" and "RESEARCHER" are plain non-interactive text */}
-        <div className="inline-flex items-center gap-1.5 whitespace-nowrap shrink-0 text-[11.5px] tracking-[0.06em] uppercase text-ink">
+        <div className="inline-flex min-w-0 items-center gap-1.5 whitespace-nowrap shrink-0 text-[11.5px] tracking-[0.06em] uppercase text-ink">
           <a
             href={withBase('/')}
             onClick={(e) => handleLinkClick(e, '/')}
@@ -141,7 +150,12 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({
                 key={item.path}
                 href={withBase(item.path)}
                 aria-current={active ? 'page' : undefined}
-                onClick={(e) => handleLinkClick(e, item.path)}
+                onClick={(e) => handleLinkClick(e, item.path, 'navbar_desktop')}
+                onAuxClick={(e) => {
+                  if (e.button === 1 && item.path === WORK_ROUTE) {
+                    trackWorkNavClick('navbar_desktop', item.path);
+                  }
+                }}
                 className={`inline-flex min-h-[44px] -my-3 items-center px-1 whitespace-nowrap shrink-0 text-[11.5px] font-semibold tracking-[0.08em] uppercase transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus ${
                   active
                     ? 'text-ink editorial-underline'
@@ -184,7 +198,7 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({
             transition={MENU_TRANSITION}
             className="sm:hidden absolute inset-x-0 top-full border-b border-hairline bg-alabaster shadow-[0_12px_28px_-12px_rgba(14,14,14,0.14)]"
           >
-            <div className="mx-auto flex max-w-[1100px] flex-col px-6 py-3">
+            <div className="mx-auto flex max-w-[1100px] flex-col px-5 py-3 sm:px-6">
               {NAV_ITEMS.map((item) => {
                 const active = isRouteActive(item.path);
                 return (
@@ -192,7 +206,12 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({
                     key={item.path}
                     href={withBase(item.path)}
                     aria-current={active ? 'page' : undefined}
-                    onClick={(e) => handleLinkClick(e, item.path)}
+                    onClick={(e) => handleLinkClick(e, item.path, 'navbar_mobile')}
+                    onAuxClick={(e) => {
+                      if (e.button === 1 && item.path === WORK_ROUTE) {
+                        trackWorkNavClick('navbar_mobile', item.path);
+                      }
+                    }}
                     className={`flex min-h-[48px] items-center justify-end text-right border-b border-hairline/60 last:border-b-0 text-[12px] font-semibold tracking-[0.08em] uppercase transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus ${
                       active
                         ? 'text-ink'

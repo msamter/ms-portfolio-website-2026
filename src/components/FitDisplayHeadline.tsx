@@ -10,6 +10,8 @@ interface FitDisplayHeadlineProps {
   heightScale?: number;
   /** Optional upper cap (px) so short titles remain balanced above the fold. */
   maxFontSize?: number;
+  /** Exact rendered width/height ratio to lock container height before webfont load (prevents CLS). */
+  reservedAspectRatio?: number;
 }
 
 /**
@@ -23,6 +25,7 @@ export const FitDisplayHeadline: React.FC<FitDisplayHeadlineProps> = React.memo(
   wordSpacing = '0.06em',
   heightScale = 1.22,
   maxFontSize,
+  reservedAspectRatio,
 }) => {
   const { settings } = useAccessibility();
   const effectiveHeightScale = settings.readableFont ? 1 : heightScale;
@@ -129,9 +132,14 @@ export const FitDisplayHeadline: React.FC<FitDisplayHeadlineProps> = React.memo(
 
   // Extra vertical flow space to accommodate scaleY from top origin without clipping
   const extraHeightEm = Math.max(0, (effectiveHeightScale - 1) * 0.88);
+  const lockAspectRatio = !settings.readableFont && reservedAspectRatio !== undefined;
 
   return (
-    <div ref={containerRef} className="w-full overflow-x-clip overflow-y-visible text-center">
+    <div
+      ref={containerRef}
+      style={lockAspectRatio ? { aspectRatio: `${reservedAspectRatio}` } : undefined}
+      className="flex w-full items-start justify-center overflow-x-clip overflow-y-visible text-center"
+    >
       <h1
         ref={textRef}
         className={`display-headline inline-block whitespace-nowrap select-none align-top ${className}`}
@@ -142,7 +150,7 @@ export const FitDisplayHeadline: React.FC<FitDisplayHeadlineProps> = React.memo(
           marginRight: settings.readableFont ? undefined : `-${effectiveLetterSpacing}`,
           transform: effectiveHeightScale !== 1 ? `scaleY(${effectiveHeightScale})` : undefined,
           transformOrigin: 'top center',
-          marginBottom: extraHeightEm > 0 ? `${extraHeightEm.toFixed(3)}em` : undefined,
+          marginBottom: !lockAspectRatio && extraHeightEm > 0 ? `${extraHeightEm.toFixed(3)}em` : undefined,
         }}
       >
         {text}

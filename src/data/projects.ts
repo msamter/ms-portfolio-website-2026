@@ -91,7 +91,7 @@ export const WELLBE_SLIDES: PhoneSlide[] = [
     title: 'Today / Quick Check-In',
     caption:
       'Calm dashboard with latest mood status and one-tap check-in tags.',
-    alt: 'WELLBE+ mobile preview Today screen showing latest Tired state and color-coded Quick Check-In buttons',
+    alt: 'WELLBE+ mobile preview Today screen showing latest Joyful state and color-coded Quick Check-In buttons',
   },
   {
     id: 'wellbe-live-2',
@@ -309,6 +309,14 @@ export const CASE_STUDIES: CaseStudy[] = [
             loadingLabel: 'Loading live prototype...',
             caption:
               'Interactive build — tap check-ins, routines, and tabs directly inside the frame.',
+            fallbackCaption:
+              'Static app mockup shown — live embed did not connect. Use Reset Demo or Open Fullscreen above.',
+            fallbackImage: {
+              src: 'assets/wellbe-prototype-mobile-fallback.webp',
+              alt: 'WELLBE+ mobile Today screen showing Quick Check-In emotions and bottom navigation bar',
+              width: 332,
+              height: 695,
+            },
           },
           watch: {
             label: 'INTERACTIVE WATCH PROTOTYPE',
@@ -317,6 +325,14 @@ export const CASE_STUDIES: CaseStudy[] = [
             loadingLabel: 'Loading watch prototype...',
             caption:
               'Interactive Wear OS build — tap directly inside the circular watch face to test quick check-ins and timers.',
+            fallbackCaption:
+              'Static watch mockup shown — live embed did not connect. Use Reset Demo or Open Fullscreen above.',
+            fallbackImage: {
+              src: 'assets/wellbe-prototype-watch-fallback.webp',
+              alt: 'WELLBE+ Wear OS circular emotion grid watch screen',
+              width: 364,
+              height: 364,
+            },
           },
         },
       },

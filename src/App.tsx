@@ -11,6 +11,7 @@ import { CustomCursor } from './components/CustomCursor';
 import { AccessibilityControls } from './components/AccessibilityControls';
 import { AccessibilityProvider, useAccessibility } from './context/AccessibilityContext';
 import { stripBase, withBase } from './utils/paths';
+import { usePortfolioAnalytics } from './hooks/usePortfolioAnalytics';
 
 const CaseStudyView = lazy(() =>
   import('./views/CaseStudyView').then((mod) => ({ default: mod.CaseStudyView }))
@@ -93,6 +94,7 @@ function scrollToPageTop(behavior: ScrollBehavior): void {
 
 function AppContent() {
   const { settings, openPanel } = useAccessibility();
+  const { trackExternalLinkClick } = usePortfolioAnalytics();
   const [route, setRoute] = useState<string>(() => {
     if (typeof window === 'undefined') return '/';
     return normalizePath(window.location.pathname);
@@ -404,7 +406,7 @@ function AppContent() {
       <Analytics />
       <SpeedInsights route={route} />
       {!settings.nativeCursor && <CustomCursor route={route} />}
-      <div className="min-h-screen overflow-x-clip bg-alabaster text-ink flex flex-col">
+      <div className="min-h-dvh overflow-x-clip bg-alabaster text-ink flex flex-col">
         <a
           href="#main-content"
           className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[60] focus:bg-accent-bg focus:px-4 focus:py-2.5 focus:text-[11.5px] focus:font-semibold focus:uppercase focus:tracking-[0.08em] focus:text-accent-fg focus:outline-2 focus:outline-offset-2 focus:outline-focus"
@@ -414,7 +416,7 @@ function AppContent() {
         <button
           type="button"
           onClick={(e) => openPanel(e.currentTarget)}
-          className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-[210px] focus:z-[60] focus:bg-accent-bg focus:px-4 focus:py-2.5 focus:text-[11.5px] focus:font-semibold focus:uppercase focus:tracking-[0.08em] focus:text-accent-fg focus:outline-2 focus:outline-offset-2 focus:outline-focus"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-14 focus:left-3 sm:focus:top-3 sm:focus:left-[210px] focus:z-[60] focus:bg-accent-bg focus:px-4 focus:py-2.5 focus:text-[11.5px] focus:font-semibold focus:uppercase focus:tracking-[0.08em] focus:text-accent-fg focus:outline-2 focus:outline-offset-2 focus:outline-focus"
         >
           Accessibility settings
         </button>
@@ -446,14 +448,14 @@ function AppContent() {
 
             {matchedProject && (
               <main id="main-content" className="flex-1">
-                <Suspense fallback={<div className="min-h-screen" />}>
+                <Suspense fallback={<div className="min-h-dvh" />}>
                   <CaseStudyView project={matchedProject} onNavigate={navigate} />
                 </Suspense>
               </main>
             )}
 
             {isNotFound && (
-              <Suspense fallback={<div id="main-content" className="min-h-screen" />}>
+              <Suspense fallback={<div id="main-content" className="min-h-dvh" />}>
                 <NotFoundView onNavigate={navigate} />
               </Suspense>
             )}
@@ -461,10 +463,7 @@ function AppContent() {
         </AnimatePresence>
 
         {!isNotFound && (
-          <Footer
-            onEmailClick={handleEmailClick}
-            onOpenAccessibility={openPanel}
-          />
+          <Footer onEmailClick={handleEmailClick} />
         )}
 
         <AccessibilityControls />
@@ -479,7 +478,7 @@ function AppContent() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 8 }}
               transition={TOAST_TRANSITION}
-              className="fixed bottom-18 left-1/2 z-50 w-max max-w-[calc(100vw-2rem)] -translate-x-1/2 flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 border border-hairline bg-accent-bg px-4 py-2.5 text-[12.5px] text-accent-fg shadow-md sm:bottom-5"
+              className="fixed bottom-[calc(4.75rem+env(safe-area-inset-bottom))] left-1/2 z-50 w-max max-w-[calc(100vw-2rem)] -translate-x-1/2 flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 border border-hairline bg-accent-bg px-4 py-2.5 text-[12.5px] text-accent-fg shadow-md sm:bottom-[calc(1.25rem+env(safe-area-inset-bottom))]"
             >
               <span className="inline-flex items-center gap-2 break-all sm:whitespace-nowrap">
                 <Check size={14} strokeWidth={2} className="shrink-0" aria-hidden="true" />
@@ -488,6 +487,15 @@ function AppContent() {
               <span className="hidden sm:inline-block h-3.5 w-px bg-hairline/50" aria-hidden="true" />
               <a
                 href={`mailto:${CONTACT_EMAIL}`}
+                onClick={() =>
+                  trackExternalLinkClick({
+                    label: 'Open Mail',
+                    url: `mailto:${CONTACT_EMAIL}`,
+                    location: 'email_toast',
+                    category: 'contact',
+                    interaction: 'open',
+                  })
+                }
                 className="inline-flex min-h-[44px] -my-2 items-center gap-1.5 whitespace-nowrap text-[11px] font-semibold uppercase tracking-[0.08em] text-accent-fg/85 hover:text-accent-fg underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent-fg"
               >
                 <Mail size={12} strokeWidth={1.75} aria-hidden="true" />

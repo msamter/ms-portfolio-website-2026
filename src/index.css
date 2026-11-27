@@ -10,6 +10,16 @@
   font-display: swap;
 }
 
+/* Metric-calibrated fallback matching Grith's condensed horizontal advance and 800/200 vertical metrics */
+@font-face {
+  font-family: "Grith Fallback";
+  src: local("Arial"), local("Helvetica Neue"), local("Helvetica"), local("Roboto");
+  size-adjust: 53%;
+  ascent-override: 151%;
+  descent-override: 38%;
+  line-gap-override: 0%;
+}
+
 @theme {
   --color-alabaster: #F4F1EC;
   --color-surface: #FFFFFF;
@@ -25,7 +35,7 @@
   --color-focus: #0E0E0E;
 
   --font-sans: "Heebo", -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
-  --font-display: "Grith", "Heebo", sans-serif;
+  --font-display: "Grith", "Grith Fallback", "Heebo", sans-serif;
 }
 
 /* Accessibility Theme Tokens (Default Alabaster, Calming Dark, AAA High Contrast) */
@@ -76,6 +86,8 @@ html[data-a11y-text="125"] {
     color: var(--color-ink);
     font-family: "Heebo", -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
     scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -86,17 +98,19 @@ html[data-a11y-text="125"] {
     color: var(--color-ink);
     font-family: "Heebo", -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
     overflow-x: clip;
+    overflow-wrap: break-word;
   }
 
   button,
   a {
     cursor: pointer;
+    touch-action: manipulation;
   }
 }
 
 /* Tall condensed Grith display typography (native weight, no faux bold) */
 .display-headline {
-  font-family: "Grith", sans-serif;
+  font-family: "Grith", "Grith Fallback", sans-serif;
   font-weight: 400;
   font-synthesis: none;
   text-transform: uppercase;

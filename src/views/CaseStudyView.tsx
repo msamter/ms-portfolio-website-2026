@@ -6,6 +6,7 @@ import { ReadingProgressBar } from '../components/ReadingProgressBar';
 import { PhoneScrollTrack } from '../components/PhoneScrollTrack';
 import { LivePrototypeDemos } from '../components/LivePrototypeDemos';
 import { isModifiedEvent, withBase } from '../utils/paths';
+import { usePortfolioAnalytics } from '../hooks/usePortfolioAnalytics';
 
 interface CaseStudyViewProps {
   project: CaseStudy;
@@ -51,6 +52,7 @@ const HeroSmartphoneShowcase: React.FC<{
           loading="eager"
           fetchPriority="high"
           decoding="async"
+          style={{ aspectRatio: `${fullWidth} / ${fullHeight}` }}
           className="pointer-events-none block h-auto w-full select-none -mt-[5.61%] -mb-[2.25%] drop-shadow-[0_18px_36px_rgba(14,14,14,0.14)]"
         />
       </motion.div>
@@ -62,32 +64,37 @@ HeroSmartphoneShowcase.displayName = 'HeroSmartphoneShowcase';
 
 const SectionVisualAsset: React.FC<{
   image: NonNullable<CaseStudy['sections'][number]['image']>;
-}> = React.memo(({ image }) => (
-  <figure
-    className={
-      image.variant === 'phone'
-        ? 'mt-12 mx-auto w-full max-w-[310px] sm:max-w-[340px]'
-        : 'mt-10 w-full overflow-hidden rounded-[10px] bg-[#1B1C20]'
-    }
-  >
-    <img
-      src={withBase(image.src)}
-      alt={image.alt}
-      width={image.width}
-      height={image.height}
-      loading="lazy"
-      decoding="async"
+}> = React.memo(({ image }) => {
+  const computedAspectRatio =
+    image.aspectRatio ??
+    (image.width && image.height ? `${image.width} / ${image.height}` : undefined);
+
+  return (
+    <figure
       className={
         image.variant === 'phone'
-          ? 'block h-auto w-full object-contain drop-shadow-[0_18px_36px_rgba(14,14,14,0.14)]'
-          : 'block h-auto w-full'
+          ? 'mt-12 mx-auto w-full max-w-[310px] sm:max-w-[340px]'
+          : 'mt-10 w-full overflow-hidden rounded-[10px] bg-[#1B1C20]'
       }
-      style={
-        image.aspectRatio ? { aspectRatio: image.aspectRatio } : undefined
-      }
-    />
-  </figure>
-));
+      style={computedAspectRatio ? { aspectRatio: computedAspectRatio } : undefined}
+    >
+      <img
+        src={withBase(image.src)}
+        alt={image.alt}
+        width={image.width}
+        height={image.height}
+        loading="lazy"
+        decoding="async"
+        className={
+          image.variant === 'phone'
+            ? 'block h-full w-full object-contain drop-shadow-[0_18px_36px_rgba(14,14,14,0.14)]'
+            : 'block h-full w-full object-cover'
+        }
+        style={computedAspectRatio ? { aspectRatio: computedAspectRatio } : undefined}
+      />
+    </figure>
+  );
+});
 
 SectionVisualAsset.displayName = 'SectionVisualAsset';
 
@@ -95,6 +102,7 @@ export const CaseStudyView: React.FC<CaseStudyViewProps> = ({
   project,
   onNavigate,
 }) => {
+  const { trackExternalLinkClick, trackWorkProjectClick } = usePortfolioAnalytics();
   const articleRef = useRef<HTMLElement | null>(null);
   const currentIndex = CASE_STUDIES.findIndex((p) => p.slug === project.slug);
   const nextProject =
@@ -109,8 +117,8 @@ export const CaseStudyView: React.FC<CaseStudyViewProps> = ({
       <header
         className={
           project.heroImages?.src
-            ? 'relative z-10 mx-auto flex min-h-[max(220px,calc(100svh_-_58px_-_min(99vw,166svh,1780px)_*_0.2257))] max-w-[1100px] flex-col justify-center px-6 py-6 text-center sm:px-10'
-            : 'relative z-10 mx-auto flex min-h-[max(220px,calc(100svh_-_58px_-_min(108vw,180svh,1920px)_*_0.2156))] max-w-[1100px] flex-col justify-center px-6 py-6 text-center sm:px-10'
+            ? 'relative z-10 mx-auto flex min-h-[max(200px,calc(100svh_-_58px_-_min(99vw,166svh,1780px)_*_0.2257))] max-w-[1100px] flex-col justify-center px-5 py-6 text-center sm:px-10'
+            : 'relative z-10 mx-auto flex min-h-[max(200px,calc(100svh_-_58px_-_min(108vw,180svh,1920px)_*_0.2156))] max-w-[1100px] flex-col justify-center px-5 py-6 text-center sm:px-10'
         }
       >
         <motion.div
@@ -141,9 +149,9 @@ export const CaseStudyView: React.FC<CaseStudyViewProps> = ({
       />
 
       {/* Structured Editorial Narrative Column (760px) */}
-      <div className="relative z-10 mx-auto max-w-[760px] px-6 pt-0 sm:px-8 sm:pt-20">
+      <div className="relative z-10 mx-auto max-w-[760px] px-5 pt-0 sm:px-8 sm:pt-20">
         {/* Four-Part Metadata Bar — full viewing window on mobile so Overview sits below the fold */}
-        <div className="-mx-2 flex min-h-[calc(100svh_-_58px)] flex-col justify-center px-2 py-8 sm:mx-0 sm:block sm:min-h-0 sm:px-0 sm:py-0">
+        <div className="-mx-1.5 flex min-h-[calc(100svh_-_58px)] flex-col justify-center px-1.5 py-8 sm:mx-0 sm:block sm:min-h-0 sm:px-0 sm:py-0">
           <section
             aria-label="Project Metadata"
             className="grid grid-cols-1 gap-x-10 gap-y-8 border-y border-hairline py-10 sm:grid-cols-2 sm:gap-y-7 sm:py-8"
@@ -176,7 +184,7 @@ export const CaseStudyView: React.FC<CaseStudyViewProps> = ({
         </div>
 
         {/* Narrative Sections */}
-        <div className="mt-4 -mx-3.5 space-y-8 sm:mt-14 sm:-mx-4 sm:space-y-10">
+        <div className="mt-4 -mx-2.5 space-y-7 sm:mt-14 sm:-mx-4 sm:space-y-10">
           {project.sections.map((section, sectionIdx) => {
             const sectionNumber = String(sectionIdx + 1).padStart(2, '0');
             const sectionLabel = section.kicker.replace(/^\d+\.\s*/, '');
@@ -431,7 +439,26 @@ export const CaseStudyView: React.FC<CaseStudyViewProps> = ({
                       href={section.prototypeCta.href}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="group inline-flex min-h-[44px] w-fit shrink-0 items-center justify-center gap-2 bg-accent-bg px-5 py-2.5 text-[0.71875rem] font-semibold uppercase tracking-[0.08em] text-accent-fg transition-colors duration-150 hover:bg-accent-bg-hover focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-focus"
+                      onClick={() =>
+                        trackExternalLinkClick({
+                          label: section.prototypeCta!.buttonLabel,
+                          url: section.prototypeCta!.href,
+                          location: 'case_study_cta',
+                          category: 'prototype',
+                          interaction: 'open',
+                        })
+                      }
+                      onAuxClick={(e) => {
+                        if (e.button !== 1) return;
+                        trackExternalLinkClick({
+                          label: section.prototypeCta!.buttonLabel,
+                          url: section.prototypeCta!.href,
+                          location: 'case_study_cta',
+                          category: 'prototype',
+                          interaction: 'open',
+                        });
+                      }}
+                      className="group inline-flex min-h-[44px] w-full sm:w-fit shrink-0 items-center justify-center gap-2 bg-accent-bg px-5 py-2.5 text-[0.71875rem] font-semibold uppercase tracking-[0.08em] text-accent-fg transition-colors duration-150 hover:bg-accent-bg-hover focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-focus"
                     >
                       <span>{section.prototypeCta.buttonLabel}</span>
                       <ArrowUpRight
@@ -520,7 +547,7 @@ export const CaseStudyView: React.FC<CaseStudyViewProps> = ({
                     </h3>
                     <PhoneScrollTrack
                       slides={section.phoneCarousel}
-                      frameAspect="636/1376"
+                      frameAspect="450/974"
                       ariaLabel={`${project.displayTitle} mobile mockups`}
                     />
                   </div>
@@ -558,7 +585,7 @@ export const CaseStudyView: React.FC<CaseStudyViewProps> = ({
         </div>
 
         {/* Colophon Stamp */}
-        <div className="mt-20 flex items-center justify-between gap-4 border-t border-hairline pt-8">
+        <div className="mt-16 sm:mt-20 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-t border-hairline pt-8">
           <div className="flex items-center gap-3 min-w-0">
             <img
               src={withBase('assets/m-grey.webp')}
@@ -567,7 +594,7 @@ export const CaseStudyView: React.FC<CaseStudyViewProps> = ({
               height={24}
               loading="lazy"
               decoding="async"
-              className="h-6 w-6 shrink-0 object-contain"
+              className="aspect-square h-6 w-6 shrink-0 object-contain"
             />
             <span className="text-[0.78125rem] text-muted">
               End of Case Study · {project.displayTitle}
@@ -590,14 +617,33 @@ export const CaseStudyView: React.FC<CaseStudyViewProps> = ({
                   ? '/Work'
                   : `/work/${nextProject.slug}`
               )}
-              onClick={(e) => {
-                if (isModifiedEvent(e)) return;
-                e.preventDefault();
-                onNavigate(
+              onAuxClick={(e) => {
+                if (e.button !== 1) return;
+                const destination =
                   nextProject.slug === CASE_STUDIES[0]?.slug
                     ? '/Work'
-                    : `/work/${nextProject.slug}`
-                );
+                    : `/work/${nextProject.slug}`;
+                trackWorkProjectClick({
+                  project: nextProject.displayTitle,
+                  slug: nextProject.slug,
+                  location: 'next_project_card',
+                  destination,
+                });
+              }}
+              onClick={(e) => {
+                const destination =
+                  nextProject.slug === CASE_STUDIES[0]?.slug
+                    ? '/Work'
+                    : `/work/${nextProject.slug}`;
+                trackWorkProjectClick({
+                  project: nextProject.displayTitle,
+                  slug: nextProject.slug,
+                  location: 'next_project_card',
+                  destination,
+                });
+                if (isModifiedEvent(e)) return;
+                e.preventDefault();
+                onNavigate(destination);
               }}
               className="group flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between focus-visible:outline-2 focus-visible:outline-offset-6 focus-visible:outline-focus"
             >

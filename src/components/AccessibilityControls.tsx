@@ -184,7 +184,7 @@ export const AccessibilityControls: React.FC = () => {
             : 'Accessibility settings'
         }
         title="Accessibility settings (Alt+A)"
-        className={`fixed bottom-4 right-4 z-40 inline-flex h-[44px] min-w-[44px] items-center justify-center gap-1.5 rounded-[8px] border px-3 shadow-[0_8px_24px_-12px_rgba(14,14,14,0.22)] transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus sm:bottom-5 sm:right-5 ${
+        className={`fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] right-[calc(1rem+env(safe-area-inset-right))] z-40 inline-flex h-[44px] min-w-[44px] items-center justify-center gap-1.5 rounded-[8px] border px-3 shadow-[0_8px_24px_-12px_rgba(14,14,14,0.22)] transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus sm:bottom-[calc(1.25rem+env(safe-area-inset-bottom))] sm:right-[calc(1.25rem+env(safe-area-inset-right))] ${
           hasCustomizations
             ? 'border-accent-bg bg-accent-bg text-accent-fg hover:bg-accent-bg-hover'
             : 'border-hairline bg-surface text-ink hover:bg-stage'
@@ -228,7 +228,7 @@ export const AccessibilityControls: React.FC = () => {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 10 }}
               transition={DIALOG_TRANSITION}
-              className="relative z-10 flex max-h-[calc(100svh-1.5rem)] w-full max-w-[410px] flex-col overflow-hidden rounded-[10px] border border-hairline bg-surface text-ink shadow-[0_24px_48px_-16px_rgba(0,0,0,0.28)] sm:max-h-[calc(100svh-2.5rem)]"
+              className="relative z-10 flex max-h-[calc(100dvh-1.5rem)] w-full max-w-[410px] flex-col overflow-hidden rounded-[10px] border border-hairline bg-surface text-ink shadow-[0_24px_48px_-16px_rgba(0,0,0,0.28)] sm:max-h-[calc(100dvh-2.5rem)]"
             >
               {/* Dialog Header */}
               <div className="flex items-start justify-between gap-4 border-b border-hairline px-5 py-4 sm:px-6">
@@ -264,7 +264,7 @@ export const AccessibilityControls: React.FC = () => {
                   <div
                     role="radiogroup"
                     aria-label="Appearance and contrast mode"
-                    className="mt-2.5 grid grid-cols-3 gap-1.5 rounded-[8px] border border-hairline bg-stage p-1"
+                    className="mt-2.5 grid grid-cols-1 min-[340px]:grid-cols-3 gap-1.5 rounded-[8px] border border-hairline bg-stage p-1"
                   >
                     {THEME_OPTIONS.map((option) => {
                       const selected = settings.theme === option.value;
@@ -281,7 +281,7 @@ export const AccessibilityControls: React.FC = () => {
                               `${option.label} appearance selected.`
                             )
                           }
-                          className={`min-h-[40px] rounded-[6px] px-2 py-2 text-[0.78125rem] font-semibold whitespace-nowrap transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus ${
+                          className={`min-h-[40px] rounded-[6px] px-2 py-2 text-center text-[0.75rem] sm:text-[0.78125rem] font-semibold leading-tight transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus ${
                             selected
                               ? 'bg-accent-bg text-accent-fg'
                               : 'text-ink hover:bg-surface/70'
@@ -411,15 +411,15 @@ export const AccessibilityControls: React.FC = () => {
               </div>
 
               {/* Dialog Footer */}
-              <div className="flex items-center justify-between gap-3 border-t border-hairline bg-stage/60 px-5 py-3.5 sm:px-6">
-                <span className="text-[0.75rem] text-muted whitespace-nowrap">
+              <div className="flex flex-wrap items-center justify-between gap-3 border-t border-hairline bg-stage/60 px-5 pt-3.5 pb-[calc(0.875rem+env(safe-area-inset-bottom))] sm:px-6 sm:pb-3.5">
+                <span className="hidden sm:inline text-[0.75rem] text-muted whitespace-nowrap">
                   Shortcut: <kbd className="font-semibold text-ink">Alt + A</kbd>
                 </span>
                 <button
                   type="button"
                   onClick={resetSettings}
                   disabled={!hasCustomizations}
-                  className="inline-flex min-h-[40px] items-center gap-1.5 rounded-[6px] border border-hairline bg-surface px-3.5 py-2 text-[0.75rem] font-semibold uppercase tracking-[0.06em] text-ink whitespace-nowrap transition-colors duration-150 hover:bg-stage disabled:opacity-45 disabled:cursor-not-allowed focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                  className="ml-auto inline-flex min-h-[40px] items-center gap-1.5 rounded-[6px] border border-hairline bg-surface px-3.5 py-2 text-[0.75rem] font-semibold uppercase tracking-[0.06em] text-ink whitespace-nowrap transition-colors duration-150 hover:bg-stage disabled:opacity-45 disabled:cursor-not-allowed focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
                 >
                   <RotateCcw size={13} strokeWidth={1.75} aria-hidden="true" />
                   <span>Reset Defaults</span>

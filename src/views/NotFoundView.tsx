@@ -10,7 +10,7 @@ const FADE_UP_TRANSITION = { duration: 0.5, ease: [0.22, 1, 0.36, 1] as const };
 
 export const NotFoundView: React.FC<NotFoundViewProps> = ({ onNavigate }) => {
   return (
-    <main id="main-content" className="flex min-h-screen w-full flex-col items-center justify-between bg-alabaster px-6 py-10 text-center">
+    <main id="main-content" className="flex min-h-dvh w-full flex-col items-center justify-between bg-alabaster px-5 pt-10 pb-[calc(2.5rem+env(safe-area-inset-bottom))] text-center sm:px-6">
       <div className="flex flex-1 flex-col items-center justify-center">
         <motion.div
           initial={{ opacity: 0, y: 12 }}

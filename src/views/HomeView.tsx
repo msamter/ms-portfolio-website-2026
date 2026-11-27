@@ -4,6 +4,7 @@ import { CASE_STUDIES, QA_ITEMS } from '../data/projects';
 import { FitDisplayHeadline } from '../components/FitDisplayHeadline';
 import { BackspaceText } from '../components/BackspaceText';
 import { isModifiedEvent, withBase } from '../utils/paths';
+import { usePortfolioAnalytics } from '../hooks/usePortfolioAnalytics';
 
 interface HomeViewProps {
   onNavigate: (path: string) => void;
@@ -25,6 +26,7 @@ function getWellbeHeroPath(): string {
 }
 
 export const HomeView: React.FC<HomeViewProps> = ({ onNavigate }) => {
+  const { trackWorkProjectClick } = usePortfolioAnalytics();
   const featuredProject = CASE_STUDIES[0];
   const prefetchedCaseStudyHero = useRef(false);
 
@@ -58,7 +60,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate }) => {
   return (
     <div className="w-full">
       {/* Hero Headline & Tagline */}
-      <section className="mx-auto max-w-[1100px] px-6 pt-10 sm:px-10 sm:pt-14 md:pt-16">
+      <section className="mx-auto max-w-[1100px] px-5 pt-8 sm:px-10 sm:pt-14 md:pt-16">
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
@@ -70,9 +72,10 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate }) => {
             letterSpacing="0.045em"
             wordSpacing="0.06em"
             heightScale={1.2}
+            reservedAspectRatio={3.948}
           />
 
-          <p className="mt-8 sm:mt-11 min-h-[3.2em] sm:min-h-[1.6em] text-[1rem] sm:text-[1.08rem] font-medium tracking-[-0.01em] text-ink">
+          <p className="mt-8 sm:mt-11 min-h-[3.2em] sm:min-h-[1.6em] text-[1rem] sm:text-[1.08rem] leading-[1.45] font-medium tracking-[-0.01em] text-ink">
             <BackspaceText
               phrases={INTRO_PHRASES}
               typeSpeed={44}
@@ -90,7 +93,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate }) => {
       {/* Framed UX Case Study Aligned With Navbar */}
       <div
         id="selected-work"
-        className="mx-auto mt-10 max-w-[1100px] scroll-mt-24 px-6 sm:mt-14 sm:scroll-mt-28 sm:px-10"
+        className="mx-auto mt-9 max-w-[1100px] scroll-mt-20 px-5 sm:mt-14 sm:scroll-mt-28 sm:px-10"
       >
         <article aria-label="Featured Case Study">
           <a
@@ -98,17 +101,32 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate }) => {
             onFocus={prefetchCaseStudyHero}
             onPointerDown={prefetchCaseStudyHero}
             onPointerEnter={prefetchCaseStudyHero}
+            onAuxClick={(e) => {
+              if (e.button !== 1) return;
+              trackWorkProjectClick({
+                project: featuredProject.displayTitle,
+                slug: featuredProject.slug,
+                location: 'home_featured_card',
+                destination: '/Work',
+              });
+            }}
             onClick={(e) => {
+              trackWorkProjectClick({
+                project: featuredProject.displayTitle,
+                slug: featuredProject.slug,
+                location: 'home_featured_card',
+                destination: '/Work',
+              });
               if (isModifiedEvent(e)) return;
               e.preventDefault();
               onNavigate('/Work');
             }}
-            className="group block rounded-[10px] focus-visible:outline-2 focus-visible:outline-offset-8 focus-visible:outline-focus"
+            className="group block rounded-[10px] focus-visible:outline-2 focus-visible:outline-offset-4 sm:focus-visible:outline-offset-8 focus-visible:outline-focus"
           >
             {/* Pure CSS hover/focus outline avoids JS pointermove tracking and HomeView re-renders */}
             <div
               data-cursor="project"
-              className="relative w-full overflow-hidden rounded-[10px] bg-[#0B0C0C] shadow-[0_0_0_1px_var(--color-ink)] transition-shadow duration-200 ease-out hover:shadow-[0_0_0_12px_var(--color-ink)] group-focus-visible:shadow-[0_0_0_12px_var(--color-ink)] motion-reduce:transition-none"
+              className="relative aspect-[1604/902] w-full overflow-hidden rounded-[10px] bg-[#0B0C0C] shadow-[0_0_0_1px_var(--color-ink)] transition-shadow duration-200 ease-out hover:shadow-[0_0_0_6px_var(--color-ink)] sm:hover:shadow-[0_0_0_12px_var(--color-ink)] group-focus-visible:shadow-[0_0_0_6px_var(--color-ink)] sm:group-focus-visible:shadow-[0_0_0_12px_var(--color-ink)] motion-reduce:transition-none"
             >
               <img
                 src={withBase('assets/wellbe-home-1604.webp')}
@@ -118,7 +136,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate }) => {
                 loading="eager"
                 fetchPriority="high"
                 decoding="async"
-                className="block h-auto w-full transform-gpu"
+                className="block h-full w-full object-cover transform-gpu"
               />
             </div>
 
@@ -141,7 +159,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate }) => {
       </div>
 
       {/* Centered 760px Editorial Column */}
-      <div className="mx-auto max-w-[1100px] px-6 sm:px-10">
+      <div className="mx-auto max-w-[1100px] px-5 sm:px-10">
         <div className="mx-auto mt-16 max-w-[760px] sm:mt-20">
           {/* Small Divider 1: After Case Study, Before Editorial Intro */}
           <hr className="border-0 h-px w-full bg-hairline" />

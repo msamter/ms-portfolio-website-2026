@@ -7,6 +7,7 @@ import {
   useScroll,
   useTransform,
 } from 'motion/react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { withBase } from '../utils/paths';
 import { useAccessibility } from '../context/AccessibilityContext';
 
@@ -18,7 +19,7 @@ export interface PhoneSlide {
   alt: string;
 }
 
-export type PhoneFrameAspect = '740/1420' | '636/1376';
+export type PhoneFrameAspect = '740/1420' | '450/974';
 
 export interface PhoneScrollTrackProps {
   slides: PhoneSlide[];
@@ -27,16 +28,103 @@ export interface PhoneScrollTrackProps {
   frameAspect?: PhoneFrameAspect;
 }
 
+interface AspectLayoutConfig {
+  width: number;
+  height: number;
+  radiusClass: string;
+  stickyFigureWidth: string;
+  stickyFrameBox: string;
+  snapFigureWidth: string;
+  snapFrameBox: string;
+}
+
+const FRAME_ASPECT_CONFIG: Record<PhoneFrameAspect, AspectLayoutConfig> = {
+  '450/974': {
+    width: 450,
+    height: 974,
+    radiusClass: 'rounded-[12%/5.55%]',
+    stickyFigureWidth:
+      'w-full px-2 sm:w-[clamp(232px,calc((100svh-16.5rem)*450/974+2rem),340px)] sm:px-0',
+    stickyFrameBox:
+      'aspect-[450/974] w-[min(100%,clamp(148px,calc((100svh-13.25rem)*450/974),330px))] sm:w-[clamp(148px,calc((100svh-16.5rem)*450/974),310px)] md:w-[clamp(148px,calc((100svh-16.5rem)*450/974),330px)]',
+    snapFigureWidth: 'w-[min(82vw,290px)] snap-center px-1 sm:w-[300px] sm:px-0 md:w-[320px]',
+    snapFrameBox: 'aspect-[450/974] w-full max-w-[270px] sm:w-[290px] md:w-[310px]',
+  },
+  '740/1420': {
+    width: 740,
+    height: 1420,
+    radiusClass: 'rounded-[11%/5.8%]',
+    stickyFigureWidth:
+      'w-full px-2 sm:w-[clamp(240px,calc((100svh-16.5rem)*740/1420+2rem),340px)] sm:px-0',
+    stickyFrameBox:
+      'aspect-[740/1420] w-[min(100%,clamp(148px,calc((100svh-13.25rem)*740/1420),350px))] sm:w-[clamp(148px,calc((100svh-16.5rem)*740/1420),320px)] md:w-[clamp(148px,calc((100svh-16.5rem)*740/1420),340px)]',
+    snapFigureWidth: 'w-[min(84vw,300px)] snap-center px-1 sm:w-[320px] sm:px-0 md:w-[340px]',
+    snapFrameBox: 'aspect-[740/1420] w-full max-w-[280px] sm:w-[310px] md:w-[330px]',
+  },
+};
+
 function formatCounter(index: number, total: number): string {
   const current = String(index + 1).padStart(2, '0');
   const max = String(total).padStart(2, '0');
   return `${current} / ${max}`;
 }
 
+function resolveActiveSlideIndex(progress: number, total: number): number {
+  if (total <= 1) return 0;
+  return Math.min(total - 1, Math.max(0, Math.round(progress * (total - 1))));
+}
+
+function useActiveSlideIndex(
+  scrollYProgress: MotionValue<number>,
+  total: number
+): number {
+  const [activeIndex, setActiveIndex] = useState(() =>
+    resolveActiveSlideIndex(scrollYProgress.get(), total)
+  );
+
+  useEffect(() => {
+    const nextIdx = resolveActiveSlideIndex(scrollYProgress.get(), total);
+    setActiveIndex((prev) => (prev === nextIdx ? prev : nextIdx));
+  }, [scrollYProgress, total]);
+
+  useMotionValueEvent(scrollYProgress, 'change', (latest) => {
+    const nextIdx = resolveActiveSlideIndex(latest, total);
+    setActiveIndex((prev) => (prev === nextIdx ? prev : nextIdx));
+  });
+
+  return activeIndex;
+}
+
 /**
- * Uniform smartphone frame card used identically across all 6 slides (`wellbe-1`..`wellbe-6`).
- * Uses the exact natural 740×1420 aspect ratio of all 6 mockups so screens maximize available
- * space with zero letterboxing, centering strictly one phone at a time on mobile viewports.
+ * Detects compact landscape viewports (e.g. phones rotated horizontally) where a
+ * sticky vertical-to-horizontal stage would be too short, switching cleanly to
+ * native horizontal swipe scrolling instead.
+ */
+function useCompactViewportHeight(): boolean {
+  const [isShort, setIsShort] = useState(() =>
+    typeof window !== 'undefined' && typeof window.matchMedia === 'function'
+      ? window.matchMedia('(max-height: 520px)').matches
+      : false
+  );
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
+      return;
+    }
+    const query = window.matchMedia('(max-height: 520px)');
+    const handleChange = (event: MediaQueryListEvent) => setIsShort(event.matches);
+    setIsShort(query.matches);
+    query.addEventListener('change', handleChange);
+    return () => query.removeEventListener('change', handleChange);
+  }, []);
+
+  return isShort;
+}
+
+/**
+ * Uniform smartphone frame card used identically across all 6 slides.
+ * Uses hardware-accelerated box-shadow on an aspect-matched rounded container instead
+ * of per-pixel alpha filter: drop-shadow() for smooth 60–120fps horizontal scrolling.
  */
 const PhoneFrameCard: React.FC<{
   slide: PhoneSlide;
@@ -44,7 +132,8 @@ const PhoneFrameCard: React.FC<{
   total: number;
   failed: boolean;
   onImageError: (id: string) => void;
-  reducedMotion?: boolean;
+  snapMode?: boolean;
+  eagerLoad?: boolean;
   frameAspect?: PhoneFrameAspect;
 }> = React.memo(
   ({
@@ -53,52 +142,46 @@ const PhoneFrameCard: React.FC<{
     total,
     failed,
     onImageError,
-    reducedMotion = false,
+    snapMode = false,
+    eagerLoad = false,
     frameAspect = '740/1420',
   }) => {
     const slideNumber = String(index + 1).padStart(2, '0');
-    const isTallScreen = frameAspect === '636/1376';
-    const imgWidth = isTallScreen ? 636 : 740;
-    const imgHeight = isTallScreen ? 1376 : 1420;
-
-    const figureWidthClass = reducedMotion
-      ? 'w-full snap-center px-2 sm:w-[320px] sm:px-0 md:w-[340px]'
-      : isTallScreen
-        ? 'w-full px-2 sm:w-[clamp(240px,calc((100svh-16.5rem)*636/1376+2rem),340px)] sm:px-0'
-        : 'w-full px-2 sm:w-[clamp(240px,calc((100svh-16.5rem)*740/1420+2rem),340px)] sm:px-0';
-
-    const frameBoxClass = isTallScreen
-      ? reducedMotion
-        ? 'aspect-[636/1376] w-full max-w-[320px] sm:w-[300px] md:w-[320px]'
-        : 'aspect-[636/1376] w-[min(100%,clamp(140px,calc((100svh-13.5rem)*636/1376),340px))] sm:w-[clamp(140px,calc((100svh-16.5rem)*636/1376),310px)] md:w-[clamp(140px,calc((100svh-16.5rem)*636/1376),330px)]'
-      : reducedMotion
-        ? 'aspect-[740/1420] w-full max-w-[340px] sm:w-[320px] md:w-[340px]'
-        : 'aspect-[740/1420] w-[min(100%,clamp(140px,calc((100svh-13.5rem)*740/1420),360px))] sm:w-[clamp(140px,calc((100svh-16.5rem)*740/1420),320px)] md:w-[clamp(140px,calc((100svh-16.5rem)*740/1420),340px)]';
+    const config = FRAME_ASPECT_CONFIG[frameAspect];
+    const figureWidthClass = snapMode
+      ? config.snapFigureWidth
+      : config.stickyFigureWidth;
+    const frameBoxClass = snapMode ? config.snapFrameBox : config.stickyFrameBox;
 
     return (
       <figure className={`flex shrink-0 flex-col items-center ${figureWidthClass}`}>
         {/* Locked identical smartphone frame dimensions across all 6 screens */}
-        <div className={`relative mx-auto shrink-0 ${frameBoxClass}`}>
+        <div className={`relative mx-auto shrink-0 contain-layout ${frameBoxClass}`}>
           {failed ? (
-            <div className="absolute inset-0 sm:inset-1.5 flex flex-col items-center justify-center rounded-[22px] border border-[#2A2926] bg-[#141517] px-5 text-center text-[#F4F1EC]">
+            <div
+              className={`absolute inset-0 sm:inset-1.5 flex flex-col items-center justify-center ${config.radiusClass} border border-[#2A2926] bg-[#141517] px-5 text-center text-[#F4F1EC]`}
+            >
               <p className="micro-label text-[#9E9A90]">
                 {formatCounter(index, total)}
               </p>
               <p className="mt-2 text-[14.5px] font-medium">{slide.title}</p>
             </div>
           ) : (
-            <div className="absolute inset-0 sm:inset-1.5">
+            <div
+              className={`absolute inset-0 sm:inset-1.5 overflow-hidden ${config.radiusClass} shadow-[0_14px_28px_-8px_rgba(14,14,14,0.22),0_2px_6px_rgba(14,14,14,0.08)]`}
+            >
               <img
                 src={withBase(slide.src)}
                 alt={slide.alt}
-                width={imgWidth}
-                height={imgHeight}
-                loading="lazy"
+                width={config.width}
+                height={config.height}
+                loading={eagerLoad ? 'eager' : 'lazy'}
+                fetchPriority="low"
                 draggable={false}
                 decoding="async"
                 referrerPolicy="no-referrer"
                 onError={() => onImageError(slide.id)}
-                className="pointer-events-none block h-full w-full select-none object-contain drop-shadow-[0_14px_26px_rgba(14,14,14,0.14)]"
+                className="pointer-events-none block h-full w-full select-none object-cover"
               />
             </div>
           )}
@@ -124,7 +207,7 @@ const PhoneFrameCard: React.FC<{
 PhoneFrameCard.displayName = 'PhoneFrameCard';
 
 /**
- * Memoized row of smartphone image cards so parent layout or scroll updates
+ * Memoized row of smartphone image cards so parent scroll updates
  * never re-render the 6 smartphone image frames during horizontal scroll interactions.
  */
 const PhoneFrameRail: React.FC<{
@@ -132,14 +215,16 @@ const PhoneFrameRail: React.FC<{
   failedImages: Record<string, boolean>;
   onImageError: (id: string) => void;
   frameAspect: PhoneFrameAspect;
-  reducedMotion?: boolean;
+  snapMode?: boolean;
+  eagerLoad?: boolean;
 }> = React.memo(
   ({
     slides,
     failedImages,
     onImageError,
     frameAspect,
-    reducedMotion = false,
+    snapMode = false,
+    eagerLoad = false,
   }) => {
     const total = slides.length;
     return (
@@ -152,7 +237,8 @@ const PhoneFrameRail: React.FC<{
             total={total}
             failed={Boolean(failedImages[slide.id])}
             onImageError={onImageError}
-            reducedMotion={reducedMotion}
+            snapMode={snapMode}
+            eagerLoad={eagerLoad}
             frameAspect={frameAspect}
           />
         ))}
@@ -163,11 +249,6 @@ const PhoneFrameRail: React.FC<{
 
 PhoneFrameRail.displayName = 'PhoneFrameRail';
 
-function resolveActiveSlideIndex(progress: number, total: number): number {
-  if (total <= 1) return 0;
-  return Math.min(total - 1, Math.max(0, Math.round(progress * (total - 1))));
-}
-
 /**
  * Isolated scroll-driven counter badge (`01 / 06`–`06 / 06`).
  * Subscribes directly to `scrollYProgress` so counter ticks never re-render the phone frames.
@@ -176,25 +257,10 @@ const ScrollCounterBadge: React.FC<{
   scrollYProgress: MotionValue<number>;
   total: number;
 }> = React.memo(({ scrollYProgress, total }) => {
-  const [activeIndex, setActiveIndex] = useState(() =>
-    resolveActiveSlideIndex(scrollYProgress.get(), total)
-  );
-
-  useEffect(() => {
-    const nextIdx = resolveActiveSlideIndex(scrollYProgress.get(), total);
-    setActiveIndex((prev) => (prev === nextIdx ? prev : nextIdx));
-  }, [scrollYProgress, total]);
-
-  useMotionValueEvent(scrollYProgress, 'change', (latest) => {
-    const nextIdx = resolveActiveSlideIndex(latest, total);
-    setActiveIndex((prev) => (prev === nextIdx ? prev : nextIdx));
-  });
+  const activeIndex = useActiveSlideIndex(scrollYProgress, total);
 
   return (
-    <span
-      className="micro-label text-ink tabular-nums whitespace-nowrap"
-      aria-live="polite"
-    >
+    <span className="micro-label text-ink tabular-nums whitespace-nowrap">
       {formatCounter(activeIndex, total)}
     </span>
   );
@@ -210,20 +276,7 @@ const ScrollSequenceDots: React.FC<{
   scrollYProgress: MotionValue<number>;
   slides: PhoneSlide[];
 }> = React.memo(({ scrollYProgress, slides }) => {
-  const total = slides.length;
-  const [activeIndex, setActiveIndex] = useState(() =>
-    resolveActiveSlideIndex(scrollYProgress.get(), total)
-  );
-
-  useEffect(() => {
-    const nextIdx = resolveActiveSlideIndex(scrollYProgress.get(), total);
-    setActiveIndex((prev) => (prev === nextIdx ? prev : nextIdx));
-  }, [scrollYProgress, total]);
-
-  useMotionValueEvent(scrollYProgress, 'change', (latest) => {
-    const nextIdx = resolveActiveSlideIndex(latest, total);
-    setActiveIndex((prev) => (prev === nextIdx ? prev : nextIdx));
-  });
+  const activeIndex = useActiveSlideIndex(scrollYProgress, slides.length);
 
   return (
     <div
@@ -236,9 +289,7 @@ const ScrollSequenceDots: React.FC<{
           <span
             key={slide.id}
             className={`block h-[2px] rounded-full transition-[width,background-color] duration-200 ${
-              isCurrent
-                ? 'w-7 bg-ink sm:w-8'
-                : 'w-3.5 bg-hairline sm:w-4'
+              isCurrent ? 'w-7 bg-ink sm:w-8' : 'w-3.5 bg-hairline sm:w-4'
             }`}
           />
         );
@@ -260,6 +311,7 @@ const StickyPhoneScrollTrack: React.FC<{
   frameAspect: PhoneFrameAspect;
   failedImages: Record<string, boolean>;
   onImageError: (id: string) => void;
+  eagerLoad: boolean;
 }> = React.memo(
   ({
     slides,
@@ -268,11 +320,11 @@ const StickyPhoneScrollTrack: React.FC<{
     frameAspect,
     failedImages,
     onImageError,
+    eagerLoad,
   }) => {
     const trackOuterRef = useRef<HTMLDivElement | null>(null);
     const stageViewportRef = useRef<HTMLDivElement | null>(null);
     const railRef = useRef<HTMLDivElement | null>(null);
-
     const [maxTranslateX, setMaxTranslateX] = useState(0);
 
     const total = slides.length;
@@ -292,7 +344,7 @@ const StickyPhoneScrollTrack: React.FC<{
       measureTravel();
     }, [measureTravel, total]);
 
-    // Measure exact horizontal travel distance coalesced into rAF so resize never thrashes layout
+    // Coalesce resize measurements into rAF so resizing never thrashes layout
     useEffect(() => {
       const viewportEl = stageViewportRef.current;
       const railEl = railRef.current;
@@ -324,11 +376,10 @@ const StickyPhoneScrollTrack: React.FC<{
       };
     }, [measureTravel, total]);
 
-    // Map native vertical scroll through the tall outer track into GPU-composited horizontal movement.
-    // Sticky stage spans calc(100svh - 68px), so `start 68px` to `end end` aligns 1:1 with pinning/unpinning.
+    // Map native vertical scroll through the outer track into GPU-composited horizontal movement.
     const { scrollYProgress } = useScroll({
       target: trackOuterRef,
-      offset: ['start 68px', 'end end'],
+      offset: ['start 64px', 'end end'],
     });
 
     const x = useTransform(scrollYProgress, [0, 1], [0, -maxTranslateX]);
@@ -338,10 +389,10 @@ const StickyPhoneScrollTrack: React.FC<{
         ref={trackOuterRef}
         role="region"
         aria-label={ariaLabel}
-        className={`relative h-[300vh] w-full overflow-x-clip sm:h-[340vh] ${className}`}
+        className={`relative h-[280vh] w-full overflow-x-clip sm:h-[340vh] ${className}`}
       >
-        {/* Sticky Stage Wrapper spans cleanly to viewport bottom so start 68px -> end end aligns 1:1 */}
-        <div className="sticky top-[68px] h-[calc(100svh-68px)] w-full pb-2 sm:pb-3">
+        {/* Sticky Stage Wrapper aligns cleanly below the responsive sticky navbar */}
+        <div className="sticky top-[60px] h-[calc(100svh-60px)] w-full pb-2 sm:top-[68px] sm:h-[calc(100svh-68px)] sm:pb-3">
           <div className="flex h-full w-full flex-col justify-between overflow-hidden rounded-[8px] border border-hairline bg-stage py-3 sm:py-5">
             {/* Top Counter & Scroll Cue */}
             <div className="px-4 sm:px-6">
@@ -364,13 +415,16 @@ const StickyPhoneScrollTrack: React.FC<{
               <motion.div
                 ref={railRef}
                 style={{ x }}
-                className="flex w-full items-center gap-0 px-0 will-change-transform sm:w-max sm:items-start sm:gap-7 sm:px-6"
+                className={`flex w-full items-center gap-0 px-0 sm:w-max sm:items-start sm:gap-7 sm:px-6 ${
+                  eagerLoad ? 'will-change-transform' : ''
+                }`}
               >
                 <PhoneFrameRail
                   slides={slides}
                   failedImages={failedImages}
                   onImageError={onImageError}
                   frameAspect={frameAspect}
+                  eagerLoad={eagerLoad}
                 />
               </motion.div>
             </div>
@@ -389,6 +443,100 @@ const StickyPhoneScrollTrack: React.FC<{
 
 StickyPhoneScrollTrack.displayName = 'StickyPhoneScrollTrack';
 
+/**
+ * Native horizontal swipe/snap carousel used for reduced-motion preferences
+ * and short landscape mobile viewports, with accessible step buttons.
+ */
+const SnapPhoneScrollTrack: React.FC<{
+  slides: PhoneSlide[];
+  ariaLabel: string;
+  className: string;
+  frameAspect: PhoneFrameAspect;
+  failedImages: Record<string, boolean>;
+  onImageError: (id: string) => void;
+  eagerLoad: boolean;
+  prefersReducedMotion: boolean;
+}> = React.memo(
+  ({
+    slides,
+    ariaLabel,
+    className,
+    frameAspect,
+    failedImages,
+    onImageError,
+    eagerLoad,
+    prefersReducedMotion,
+  }) => {
+    const scrollerRef = useRef<HTMLDivElement | null>(null);
+    const total = slides.length;
+
+    const stepScroll = useCallback(
+      (direction: -1 | 1) => {
+        const el = scrollerRef.current;
+        if (!el) return;
+        const step = Math.max(240, Math.round(el.clientWidth * 0.78));
+        el.scrollBy({
+          left: direction * step,
+          behavior: prefersReducedMotion ? 'auto' : 'smooth',
+        });
+      },
+      [prefersReducedMotion]
+    );
+
+    return (
+      <div
+        role="region"
+        aria-label={ariaLabel}
+        className={`w-full rounded-[8px] border border-hairline bg-stage py-5 sm:py-8 ${className}`}
+      >
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-hairline px-4 pb-3 sm:px-6">
+          <span className="micro-label text-muted tabular-nums">
+            01–{String(total).padStart(2, '0')} SCREENS
+          </span>
+          <div className="flex items-center gap-1.5">
+            <span className="mr-1.5 hidden text-[11px] font-medium uppercase tracking-[0.06em] text-muted sm:inline">
+              Swipe or step
+            </span>
+            <button
+              type="button"
+              onClick={() => stepScroll(-1)}
+              aria-label="Previous screen"
+              className="inline-flex h-[36px] w-[36px] items-center justify-center rounded-[6px] border border-hairline bg-surface text-ink transition-colors duration-150 hover:bg-alabaster focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+            >
+              <ChevronLeft size={16} strokeWidth={1.75} aria-hidden="true" />
+            </button>
+            <button
+              type="button"
+              onClick={() => stepScroll(1)}
+              aria-label="Next screen"
+              className="inline-flex h-[36px] w-[36px] items-center justify-center rounded-[6px] border border-hairline bg-surface text-ink transition-colors duration-150 hover:bg-alabaster focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+            >
+              <ChevronRight size={16} strokeWidth={1.75} aria-hidden="true" />
+            </button>
+          </div>
+        </div>
+
+        <div
+          ref={scrollerRef}
+          tabIndex={0}
+          className="flex snap-x snap-mandatory gap-4 overflow-x-auto overscroll-x-contain px-4 pb-2 scroll-px-4 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-focus sm:gap-7 sm:px-6 sm:scroll-px-6"
+        >
+          <PhoneFrameRail
+            slides={slides}
+            failedImages={failedImages}
+            onImageError={onImageError}
+            frameAspect={frameAspect}
+            snapMode
+            eagerLoad={eagerLoad}
+          />
+        </div>
+      </div>
+    );
+  }
+);
+
+SnapPhoneScrollTrack.displayName = 'SnapPhoneScrollTrack';
+
 export const PhoneScrollTrack: React.FC<PhoneScrollTrackProps> = React.memo(
   ({
     slides,
@@ -398,53 +546,35 @@ export const PhoneScrollTrack: React.FC<PhoneScrollTrackProps> = React.memo(
   }) => {
     const { settings } = useAccessibility();
     const prefersReducedMotion = Boolean(useReducedMotion()) || settings.reduceMotion;
+    const isShortViewport = useCompactViewportHeight();
     const [failedImages, setFailedImages] = useState<Record<string, boolean>>({});
+    const [isNearViewport, setIsNearViewport] = useState(false);
     const sentinelRef = useRef<HTMLDivElement | null>(null);
-    const preloadedRef = useRef(false);
 
     const total = slides.length;
 
-    // Defer preloading the 6 carousel screens until user approaches Section 06
-    // so they never compete with the above-the-fold Case Study hero image.
+    // Switch real DOM <img> elements to eager loading once approaching the carousel
+    // (avoids detached Image() decode bursts while ensuring zero blank slides when scrolling).
     useEffect(() => {
-      if (
-        typeof window === 'undefined' ||
-        slides.length === 0 ||
-        preloadedRef.current
-      ) {
-        return;
-      }
-
-      const triggerPreload = () => {
-        if (preloadedRef.current) return;
-        preloadedRef.current = true;
-        slides.forEach((slide) => {
-          const img = new Image();
-          img.decoding = 'async';
-          img.src = withBase(slide.src);
-          img.decode?.().catch(() => {});
-        });
-      };
-
+      if (isNearViewport || total === 0) return;
       const el = sentinelRef.current;
       if (!el || typeof IntersectionObserver === 'undefined') {
-        triggerPreload();
+        setIsNearViewport(true);
         return;
       }
 
       const observer = new IntersectionObserver(
         (entries) => {
           if (entries.some((entry) => entry.isIntersecting)) {
-            triggerPreload();
+            setIsNearViewport(true);
             observer.disconnect();
           }
         },
-        { rootMargin: '1000px 0px' }
+        { rootMargin: '800px 0px' }
       );
       observer.observe(el);
-
       return () => observer.disconnect();
-    }, [slides]);
+    }, [isNearViewport, total]);
 
     const handleImageError = useCallback((id: string) => {
       setFailedImages((prev) => (prev[id] ? prev : { ...prev, [id]: true }));
@@ -454,49 +584,32 @@ export const PhoneScrollTrack: React.FC<PhoneScrollTrackProps> = React.memo(
       return null;
     }
 
-    // Accessible reduced-motion fallback: native horizontal scroll container with zero motion offset
-    if (prefersReducedMotion) {
-      return (
-        <div
-          ref={sentinelRef}
-          role="region"
-          aria-label={ariaLabel}
-          className={`w-full rounded-[8px] border border-hairline bg-stage py-6 sm:py-8 ${className}`}
-        >
-          <div className="mb-4 flex items-center justify-between gap-4 border-b border-hairline px-4 pb-3 sm:px-6">
-            <span className="micro-label text-muted">
-              01–{String(total).padStart(2, '0')} SCREENS
-            </span>
-            <span className="text-[11px] font-medium uppercase tracking-[0.06em] text-muted">
-              Scroll horizontally
-            </span>
-          </div>
-          <div
-            tabIndex={0}
-            className="flex snap-x snap-mandatory gap-0 overflow-x-auto px-0 pb-2 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-focus sm:gap-7 sm:px-6"
-          >
-            <PhoneFrameRail
-              slides={slides}
-              failedImages={failedImages}
-              onImageError={handleImageError}
-              frameAspect={frameAspect}
-              reducedMotion
-            />
-          </div>
-        </div>
-      );
-    }
+    const useNativeSnapTrack = prefersReducedMotion || isShortViewport;
 
     return (
       <div ref={sentinelRef}>
-        <StickyPhoneScrollTrack
-          slides={slides}
-          ariaLabel={ariaLabel}
-          className={className}
-          frameAspect={frameAspect}
-          failedImages={failedImages}
-          onImageError={handleImageError}
-        />
+        {useNativeSnapTrack ? (
+          <SnapPhoneScrollTrack
+            slides={slides}
+            ariaLabel={ariaLabel}
+            className={className}
+            frameAspect={frameAspect}
+            failedImages={failedImages}
+            onImageError={handleImageError}
+            eagerLoad={isNearViewport}
+            prefersReducedMotion={prefersReducedMotion}
+          />
+        ) : (
+          <StickyPhoneScrollTrack
+            slides={slides}
+            ariaLabel={ariaLabel}
+            className={className}
+            frameAspect={frameAspect}
+            failedImages={failedImages}
+            onImageError={handleImageError}
+            eagerLoad={isNearViewport}
+          />
+        )}
       </div>
     );
   }

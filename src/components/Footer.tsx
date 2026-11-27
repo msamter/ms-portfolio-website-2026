@@ -3,12 +3,10 @@ import { Github, Linkedin } from 'lucide-react';
 import { CONTACT_EMAIL } from '../data/projects';
 
 import { isModifiedEvent } from '../utils/paths';
-
-import { AccessibilityMark } from './AccessibilityControls';
+import { usePortfolioAnalytics } from '../hooks/usePortfolioAnalytics';
 
 interface FooterProps {
   onEmailClick: () => void;
-  onOpenAccessibility?: (triggerEl?: HTMLElement | null) => void;
 }
 
 const LINKEDIN_URL = 'https://www.linkedin.com/in/micahsamter/';
@@ -38,10 +36,12 @@ const ProtonMailIcon: React.FC<{ size?: number; strokeWidth?: number; className?
   </svg>
 );
 
-export const Footer: React.FC<FooterProps> = React.memo(({ onEmailClick, onOpenAccessibility }) => {
+export const Footer: React.FC<FooterProps> = React.memo(({ onEmailClick }) => {
+  const { trackExternalLinkClick } = usePortfolioAnalytics();
+
   return (
-    <footer className="mt-24 sm:mt-32 bg-alabaster">
-      <div className="mx-auto flex max-w-[1100px] flex-col items-center justify-center px-6 pt-12 pb-20 sm:px-10 sm:pt-16 sm:pb-20 text-center">
+    <footer className="mt-20 sm:mt-32 bg-alabaster">
+      <div className="mx-auto flex max-w-[1100px] flex-col items-center justify-center px-5 pt-10 pb-[calc(5.25rem+env(safe-area-inset-bottom))] sm:px-10 sm:pt-16 sm:pb-20 text-center">
         {/* Centered Social & Contact Links Row */}
         <nav
           aria-label="Footer Contact Links"
@@ -50,7 +50,15 @@ export const Footer: React.FC<FooterProps> = React.memo(({ onEmailClick, onOpenA
           <a
             href={`mailto:${CONTACT_EMAIL}`}
             onClick={(e) => {
-              if (isModifiedEvent(e)) return;
+              const modified = isModifiedEvent(e);
+              trackExternalLinkClick({
+                label: 'Email',
+                url: `mailto:${CONTACT_EMAIL}`,
+                location: 'footer',
+                category: 'contact',
+                interaction: modified ? 'open' : 'copy',
+              });
+              if (modified) return;
               e.preventDefault();
               onEmailClick();
             }}
@@ -63,6 +71,25 @@ export const Footer: React.FC<FooterProps> = React.memo(({ onEmailClick, onOpenA
             href={LINKEDIN_URL}
             target="_blank"
             rel="noopener noreferrer"
+            onClick={() =>
+              trackExternalLinkClick({
+                label: 'LinkedIn',
+                url: LINKEDIN_URL,
+                location: 'footer',
+                category: 'social',
+                interaction: 'open',
+              })
+            }
+            onAuxClick={(e) => {
+              if (e.button !== 1) return;
+              trackExternalLinkClick({
+                label: 'LinkedIn',
+                url: LINKEDIN_URL,
+                location: 'footer',
+                category: 'social',
+                interaction: 'open',
+              });
+            }}
             className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center gap-1.5 px-2 text-[11.5px] font-semibold uppercase tracking-[0.08em] text-ink editorial-underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-focus whitespace-nowrap"
           >
             <Linkedin size={14} strokeWidth={1.75} className="shrink-0" aria-hidden="true" />
@@ -72,21 +99,30 @@ export const Footer: React.FC<FooterProps> = React.memo(({ onEmailClick, onOpenA
             href={GITHUB_URL}
             target="_blank"
             rel="noopener noreferrer"
+            onClick={() =>
+              trackExternalLinkClick({
+                label: 'GitHub',
+                url: GITHUB_URL,
+                location: 'footer',
+                category: 'social',
+                interaction: 'open',
+              })
+            }
+            onAuxClick={(e) => {
+              if (e.button !== 1) return;
+              trackExternalLinkClick({
+                label: 'GitHub',
+                url: GITHUB_URL,
+                location: 'footer',
+                category: 'social',
+                interaction: 'open',
+              });
+            }}
             className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center gap-1.5 px-2 text-[11.5px] font-semibold uppercase tracking-[0.08em] text-ink editorial-underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-focus whitespace-nowrap"
           >
             <Github size={14} strokeWidth={1.75} className="shrink-0" aria-hidden="true" />
             <span>GITHUB</span>
           </a>
-          {onOpenAccessibility && (
-            <button
-              type="button"
-              onClick={(e) => onOpenAccessibility(e.currentTarget)}
-              className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center gap-1.5 px-2 text-[11.5px] font-semibold uppercase tracking-[0.08em] text-ink editorial-underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-focus whitespace-nowrap"
-            >
-              <AccessibilityMark size={14} className="shrink-0" />
-              <span>ACCESSIBILITY</span>
-            </button>
-          )}
         </nav>
 
         {/* Quiet Copyright Notice */}
