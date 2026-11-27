@@ -1,0 +1,14 @@
+node_modules/
+build/
+dist/
+coverage/
+.DS_Store
+*.log
+.env*
+!.env.example
+
+# Exclude Google AI Studio chat image attachment folders
+**/aistudio/
+src/assets/aistudio/
+assets/aistudio/
+public/assets/aistudio/

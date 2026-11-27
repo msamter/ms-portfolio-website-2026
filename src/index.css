@@ -1,0 +1,215 @@
+@import "tailwindcss";
+
+@font-face {
+  font-family: "Grith";
+  src:
+    url("/fonts/Grith.woff2") format("woff2"),
+    url("/fonts/Grith.woff") format("woff");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@theme {
+  --color-alabaster: #F4F1EC;
+  --color-surface: #FFFFFF;
+  --color-stage: #ECEAE4;
+  --color-hairline: #DDD8CE;
+  --color-ink: #0E0E0E;
+  --color-ink-body: #1C1B19;
+  --color-muted: #6E6B64;
+  --color-subtle: #9E9A90;
+  --color-accent-bg: #0E0E0E;
+  --color-accent-bg-hover: #2A2926;
+  --color-accent-fg: #F4F1EC;
+  --color-focus: #0E0E0E;
+
+  --font-sans: "Heebo", -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+  --font-display: "Grith", "Heebo", sans-serif;
+}
+
+/* Accessibility Theme Tokens (Default Alabaster, Calming Dark, AAA High Contrast) */
+html[data-a11y-theme="dark"] {
+  color-scheme: dark;
+  --color-alabaster: #121211;
+  --color-surface: #1A1A18;
+  --color-stage: #22221F;
+  --color-hairline: #34332E;
+  --color-ink: #F2EFE9;
+  --color-ink-body: #DCD8CE;
+  --color-muted: #A9A49A;
+  --color-subtle: #8C877D;
+  --color-accent-bg: #F2EFE9;
+  --color-accent-bg-hover: #DDD8CE;
+  --color-accent-fg: #121211;
+  --color-focus: #F2EFE9;
+}
+
+html[data-a11y-theme="high-contrast"] {
+  color-scheme: light;
+  --color-alabaster: #FFFFFF;
+  --color-surface: #FFFFFF;
+  --color-stage: #F4F4F4;
+  --color-hairline: #000000;
+  --color-ink: #000000;
+  --color-ink-body: #000000;
+  --color-muted: #1A1A1A;
+  --color-subtle: #262626;
+  --color-accent-bg: #000000;
+  --color-accent-bg-hover: #222222;
+  --color-accent-fg: #FFFFFF;
+  --color-focus: #005FCC;
+}
+
+/* Root Text Size Scaling */
+html[data-a11y-text="112"] {
+  font-size: 112.5%;
+}
+
+html[data-a11y-text="125"] {
+  font-size: 125%;
+}
+
+@layer base {
+  html {
+    background-color: var(--color-alabaster);
+    color: var(--color-ink);
+    font-family: "Heebo", -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    margin: 0;
+    background-color: var(--color-alabaster);
+    color: var(--color-ink);
+    font-family: "Heebo", -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+    overflow-x: clip;
+  }
+
+  button,
+  a {
+    cursor: pointer;
+  }
+}
+
+/* Tall condensed Grith display typography (native weight, no faux bold) */
+.display-headline {
+  font-family: "Grith", sans-serif;
+  font-weight: 400;
+  font-synthesis: none;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  line-height: 0.9;
+  color: var(--color-ink);
+}
+
+html[data-a11y-readable-font="true"] .display-headline {
+  font-family: "Heebo", -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+}
+
+.editorial-lead {
+  font-family: "Heebo", -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+  font-size: clamp(1.42rem, 2.75vw, 2.32rem);
+  font-weight: 400;
+  line-height: 1.32;
+  letter-spacing: -0.015em;
+  color: var(--color-ink);
+}
+
+.micro-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  line-height: 1.2;
+}
+
+/* WCAG 1.4.12 Relaxed Reading Spacing */
+html[data-a11y-spacing="true"] main p,
+html[data-a11y-spacing="true"] main li,
+html[data-a11y-spacing="true"] main td,
+html[data-a11y-spacing="true"] main blockquote,
+html[data-a11y-spacing="true"] main figcaption {
+  line-height: 1.85;
+  letter-spacing: 0.035em;
+  word-spacing: 0.1em;
+}
+
+/* Explicit Link Underlines & High-Visibility Focus Outlines */
+html[data-a11y-links="true"] a[href] {
+  text-decoration-line: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+  text-decoration-color: currentColor;
+}
+
+html[data-a11y-links="true"] :is(a, button, [tabindex]):focus-visible,
+html[data-a11y-theme="high-contrast"] :is(a, button, [tabindex]):focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 3px;
+}
+
+/* Tactile editorial link underline */
+.editorial-underline {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  text-decoration-color: currentColor;
+  transition: opacity 160ms cubic-bezier(0.22, 1, 0.36, 1),
+    text-underline-offset 160ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .editorial-underline:hover {
+    opacity: 0.65;
+    text-underline-offset: 5px;
+  }
+
+  .custom-cursor-active,
+  .custom-cursor-active * {
+    cursor: none !important;
+  }
+}
+
+@keyframes backspaceCaretBlink {
+  0%, 49% {
+    opacity: 1;
+  }
+  50%, 100% {
+    opacity: 0;
+  }
+}
+
+.backspace-caret-blink {
+  animation: backspaceCaretBlink 0.9s step-end infinite;
+}
+
+html[data-a11y-reduced-motion="true"] {
+  scroll-behavior: auto;
+}
+
+html[data-a11y-reduced-motion="true"] *,
+html[data-a11y-reduced-motion="true"] *::before,
+html[data-a11y-reduced-motion="true"] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .editorial-underline {
+    transition: none;
+  }
+  .backspace-caret-blink {
+    animation: none;
+  }
+}

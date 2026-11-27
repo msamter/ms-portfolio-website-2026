@@ -1,0 +1,29 @@
+{
+  "name": "Micah Samter — UX Researcher & Designer",
+  "short_name": "Micah Samter",
+  "description": "Portfolio of Micah Samter, UX Researcher & Designer in Atlanta, GA—using ethnographic fieldwork and usability testing to build human-centered products.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#F4F1EC",
+  "theme_color": "#F4F1EC",
+  "icons": [
+    {
+      "src": "/assets/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
+    {
+      "src": "/assets/favicon-light.webp",
+      "sizes": "400x400",
+      "type": "image/webp",
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/favicon-grey.webp",
+      "sizes": "1254x1254",
+      "type": "image/webp",
+      "purpose": "any"
+    }
+  ]
+}
