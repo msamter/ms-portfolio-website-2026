@@ -164,7 +164,7 @@ const PhoneFrameCard: React.FC<{
               <p className="micro-label text-[#9E9A90]">
                 {formatCounter(index, total)}
               </p>
-              <p className="mt-2 text-[14.5px] font-medium">{slide.title}</p>
+              <p className="mt-2 text-[0.90625rem] font-medium">{slide.title}</p>
             </div>
           ) : (
             <div
@@ -190,7 +190,7 @@ const PhoneFrameCard: React.FC<{
         {/* Screen Title & Brief Caption */}
         <figcaption className="mt-2.5 w-full max-w-[34ch] px-1 text-center sm:mt-3.5">
           <p className="text-[0.875rem] font-medium leading-[1.3] tracking-[-0.01em] text-ink sm:text-[0.9375rem]">
-            <span className="mr-1.5 text-[11px] font-semibold uppercase tracking-[0.06em] text-muted tabular-nums">
+            <span className="mr-1.5 text-[0.6875rem] font-semibold uppercase tracking-[0.06em] text-muted tabular-nums">
               {slideNumber}
             </span>
             {slide.title}
@@ -392,7 +392,7 @@ const StickyPhoneScrollTrack: React.FC<{
         className={`relative h-[280vh] w-full overflow-x-clip sm:h-[340vh] ${className}`}
       >
         {/* Sticky Stage Wrapper aligns cleanly below the responsive sticky navbar */}
-        <div className="sticky top-[60px] h-[calc(100svh-60px)] w-full pb-2 sm:top-[68px] sm:h-[calc(100svh-68px)] sm:pb-3">
+        <div className="sticky top-[3.75rem] h-[calc(100svh-3.75rem)] w-full pb-2 sm:top-[4.375rem] sm:h-[calc(100svh-4.375rem)] sm:pb-3">
           <div className="flex h-full w-full flex-col justify-between overflow-hidden rounded-[8px] border border-hairline bg-stage py-3 sm:py-5">
             {/* Top Counter & Scroll Cue */}
             <div className="px-4 sm:px-6">
@@ -401,7 +401,7 @@ const StickyPhoneScrollTrack: React.FC<{
                   scrollYProgress={scrollYProgress}
                   total={total}
                 />
-                <span className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted whitespace-nowrap">
+                <span className="text-[0.6875rem] font-medium uppercase tracking-[0.08em] text-muted whitespace-nowrap">
                   Scroll to explore
                 </span>
               </div>
@@ -494,14 +494,14 @@ const SnapPhoneScrollTrack: React.FC<{
             01–{String(total).padStart(2, '0')} SCREENS
           </span>
           <div className="flex items-center gap-1.5">
-            <span className="mr-1.5 hidden text-[11px] font-medium uppercase tracking-[0.06em] text-muted sm:inline">
+            <span className="mr-1.5 hidden text-[0.6875rem] font-medium uppercase tracking-[0.06em] text-muted sm:inline">
               Swipe or step
             </span>
             <button
               type="button"
               onClick={() => stepScroll(-1)}
               aria-label="Previous screen"
-              className="inline-flex h-[36px] w-[36px] items-center justify-center rounded-[6px] border border-hairline bg-surface text-ink transition-colors duration-150 hover:bg-alabaster focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+              className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-[6px] border border-hairline bg-surface text-ink transition-colors duration-150 hover:bg-alabaster focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
             >
               <ChevronLeft size={16} strokeWidth={1.75} aria-hidden="true" />
             </button>
@@ -509,7 +509,7 @@ const SnapPhoneScrollTrack: React.FC<{
               type="button"
               onClick={() => stepScroll(1)}
               aria-label="Next screen"
-              className="inline-flex h-[36px] w-[36px] items-center justify-center rounded-[6px] border border-hairline bg-surface text-ink transition-colors duration-150 hover:bg-alabaster focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+              className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-[6px] border border-hairline bg-surface text-ink transition-colors duration-150 hover:bg-alabaster focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
             >
               <ChevronRight size={16} strokeWidth={1.75} aria-hidden="true" />
             </button>

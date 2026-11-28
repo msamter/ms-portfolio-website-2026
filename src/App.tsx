@@ -102,6 +102,8 @@ function AppContent() {
 
   const [toastVisible, setToastVisible] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
+  const [routeAnnouncement, setRouteAnnouncement] = useState('');
+  const hasMountedRouteRef = useRef(false);
   const routeRef = useRef<string>(route);
   routeRef.current = route;
   const toastTimerRef = useRef<number | null>(null);
@@ -315,6 +317,11 @@ function AppContent() {
     const ogImageUrl = new URL(withBase('assets/social-preview-1.jpg'), window.location.href).href;
 
     document.title = title;
+    if (hasMountedRouteRef.current) {
+      setRouteAnnouncement(`Navigated to ${title}`);
+    } else {
+      hasMountedRouteRef.current = true;
+    }
     upsertMeta('name', 'description', description);
     upsertMeta(
       'name',
@@ -407,16 +414,19 @@ function AppContent() {
       <SpeedInsights route={route} />
       {!settings.nativeCursor && <CustomCursor route={route} />}
       <div className="min-h-dvh overflow-x-clip bg-alabaster text-ink flex flex-col">
+        <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
+          {routeAnnouncement}
+        </div>
         <a
           href="#main-content"
-          className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[60] focus:bg-accent-bg focus:px-4 focus:py-2.5 focus:text-[11.5px] focus:font-semibold focus:uppercase focus:tracking-[0.08em] focus:text-accent-fg focus:outline-2 focus:outline-offset-2 focus:outline-focus"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[60] focus:bg-accent-bg focus:px-4 focus:py-2.5 focus:text-[0.71875rem] focus:font-semibold focus:uppercase focus:tracking-[0.08em] focus:text-accent-fg focus:outline-2 focus:outline-offset-2 focus:outline-focus"
         >
           Skip to main content
         </a>
         <button
           type="button"
           onClick={(e) => openPanel(e.currentTarget)}
-          className="sr-only focus:not-sr-only focus:fixed focus:top-14 focus:left-3 sm:focus:top-3 sm:focus:left-[210px] focus:z-[60] focus:bg-accent-bg focus:px-4 focus:py-2.5 focus:text-[11.5px] focus:font-semibold focus:uppercase focus:tracking-[0.08em] focus:text-accent-fg focus:outline-2 focus:outline-offset-2 focus:outline-focus"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-14 focus:left-3 sm:focus:top-3 sm:focus:left-[14.5rem] focus:z-[60] focus:bg-accent-bg focus:px-4 focus:py-2.5 focus:text-[0.71875rem] focus:font-semibold focus:uppercase focus:tracking-[0.08em] focus:text-accent-fg focus:outline-2 focus:outline-offset-2 focus:outline-focus"
         >
           Accessibility settings
         </button>
@@ -441,13 +451,13 @@ function AppContent() {
             className="flex-1 flex flex-col"
           >
             {isHome && (
-              <main id="main-content" className="flex-1">
+              <main id="main-content" tabIndex={-1} className="flex-1 focus:outline-none">
                 <HomeView onNavigate={navigate} />
               </main>
             )}
 
             {matchedProject && (
-              <main id="main-content" className="flex-1">
+              <main id="main-content" tabIndex={-1} className="flex-1 focus:outline-none">
                 <Suspense fallback={<div className="min-h-dvh" />}>
                   <CaseStudyView project={matchedProject} onNavigate={navigate} />
                 </Suspense>
@@ -455,7 +465,7 @@ function AppContent() {
             )}
 
             {isNotFound && (
-              <Suspense fallback={<div id="main-content" className="min-h-dvh" />}>
+              <Suspense fallback={<div id="main-content" tabIndex={-1} className="min-h-dvh focus:outline-none" />}>
                 <NotFoundView onNavigate={navigate} />
               </Suspense>
             )}
@@ -478,7 +488,7 @@ function AppContent() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 8 }}
               transition={TOAST_TRANSITION}
-              className="fixed bottom-[calc(4.75rem+env(safe-area-inset-bottom))] left-1/2 z-50 w-max max-w-[calc(100vw-2rem)] -translate-x-1/2 flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 border border-hairline bg-accent-bg px-4 py-2.5 text-[12.5px] text-accent-fg shadow-md sm:bottom-[calc(1.25rem+env(safe-area-inset-bottom))]"
+              className="fixed bottom-[calc(4.75rem+env(safe-area-inset-bottom))] left-1/2 z-50 w-max max-w-[calc(100vw-2rem)] -translate-x-1/2 flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 border border-hairline bg-accent-bg px-4 py-2.5 text-[0.78125rem] text-accent-fg shadow-md lg:bottom-[calc(1.25rem+env(safe-area-inset-bottom))]"
             >
               <span className="inline-flex items-center gap-2 break-all sm:whitespace-nowrap">
                 <Check size={14} strokeWidth={2} className="shrink-0" aria-hidden="true" />
@@ -496,7 +506,7 @@ function AppContent() {
                     interaction: 'open',
                   })
                 }
-                className="inline-flex min-h-[44px] -my-2 items-center gap-1.5 whitespace-nowrap text-[11px] font-semibold uppercase tracking-[0.08em] text-accent-fg/85 hover:text-accent-fg underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent-fg"
+                className="inline-flex min-h-[44px] -my-2 items-center gap-1.5 whitespace-nowrap text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-accent-fg/85 hover:text-accent-fg underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent-fg"
               >
                 <Mail size={12} strokeWidth={1.75} aria-hidden="true" />
                 <span>Open Mail</span>

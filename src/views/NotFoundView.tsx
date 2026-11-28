@@ -10,7 +10,11 @@ const FADE_UP_TRANSITION = { duration: 0.5, ease: [0.22, 1, 0.36, 1] as const };
 
 export const NotFoundView: React.FC<NotFoundViewProps> = ({ onNavigate }) => {
   return (
-    <main id="main-content" className="flex min-h-dvh w-full flex-col items-center justify-between bg-alabaster px-5 pt-10 pb-[calc(2.5rem+env(safe-area-inset-bottom))] text-center sm:px-6">
+    <main
+      id="main-content"
+      tabIndex={-1}
+      className="flex min-h-dvh w-full flex-col items-center justify-between bg-alabaster px-5 pt-10 pb-[calc(2.5rem+env(safe-area-inset-bottom))] text-center focus:outline-none sm:px-6"
+    >
       <div className="flex flex-1 flex-col items-center justify-center">
         <motion.div
           initial={{ opacity: 0, y: 12 }}
@@ -33,7 +37,7 @@ export const NotFoundView: React.FC<NotFoundViewProps> = ({ onNavigate }) => {
                 e.preventDefault();
                 onNavigate('/');
               }}
-              className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center px-3 text-[11px] font-semibold uppercase tracking-[0.08em] text-ink editorial-underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-focus"
+              className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center px-3 text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-ink editorial-underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-focus"
             >
               BACK TO HOME
             </a>
@@ -41,7 +45,7 @@ export const NotFoundView: React.FC<NotFoundViewProps> = ({ onNavigate }) => {
         </motion.div>
       </div>
 
-      <p className="mt-10 text-[11.5px] font-normal tracking-[0.04em] text-muted tabular-nums">
+      <p className="mt-10 text-[0.71875rem] font-normal tracking-[0.04em] text-muted tabular-nums">
         &copy; Micah Samter 2026
       </p>
     </main>

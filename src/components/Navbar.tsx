@@ -66,6 +66,16 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({
       }
     };
 
+    const handleFocusIn = (event: FocusEvent) => {
+      if (
+        headerRef.current &&
+        event.target instanceof Node &&
+        !headerRef.current.contains(event.target)
+      ) {
+        setMobileMenuOpen(false);
+      }
+    };
+
     const mediaQuery = window.matchMedia('(min-width: 640px)');
     const handleMediaChange = (event: MediaQueryListEvent) => {
       if (event.matches) setMobileMenuOpen(false);
@@ -73,11 +83,13 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({
 
     window.addEventListener('keydown', handleKeyDown);
     document.addEventListener('pointerdown', handlePointerDown);
+    document.addEventListener('focusin', handleFocusIn);
     mediaQuery.addEventListener('change', handleMediaChange);
 
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
       document.removeEventListener('pointerdown', handlePointerDown);
+      document.removeEventListener('focusin', handleFocusIn);
       mediaQuery.removeEventListener('change', handleMediaChange);
     };
   }, [mobileMenuOpen]);
@@ -93,7 +105,9 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({
       }
       if (isModifiedEvent(event)) return;
       event.preventDefault();
-      event.currentTarget.blur();
+      if (event.detail > 0) {
+        event.currentTarget.blur();
+      }
       setMobileMenuOpen(false);
       onNavigate(targetPath);
     },
@@ -118,7 +132,7 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({
     >
       <div className="mx-auto flex max-w-[1100px] items-center justify-between gap-3 px-5 py-4 sm:gap-4 sm:px-10 sm:py-5">
         {/* Left: Only MS links to Home; "/" and "RESEARCHER" are plain non-interactive text */}
-        <div className="inline-flex min-w-0 items-center gap-1.5 whitespace-nowrap shrink-0 text-[11.5px] tracking-[0.06em] uppercase text-ink">
+        <div className="inline-flex min-w-0 items-center gap-1.5 whitespace-nowrap shrink-0 text-[0.71875rem] tracking-[0.06em] uppercase text-ink">
           <a
             href={withBase('/')}
             onClick={(e) => handleLinkClick(e, '/')}
@@ -156,7 +170,7 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({
                     trackWorkNavClick('navbar_desktop', item.path);
                   }
                 }}
-                className={`inline-flex min-h-[44px] -my-3 items-center px-1 whitespace-nowrap shrink-0 text-[11.5px] font-semibold tracking-[0.08em] uppercase transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus ${
+                className={`inline-flex min-h-[44px] min-w-[44px] -my-3 items-center justify-center px-1 whitespace-nowrap shrink-0 text-[0.71875rem] font-semibold tracking-[0.08em] uppercase transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus ${
                   active
                     ? 'text-ink editorial-underline'
                     : 'text-muted hover:text-ink'
@@ -212,7 +226,7 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({
                         trackWorkNavClick('navbar_mobile', item.path);
                       }
                     }}
-                    className={`flex min-h-[48px] items-center justify-end text-right border-b border-hairline/60 last:border-b-0 text-[12px] font-semibold tracking-[0.08em] uppercase transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus ${
+                    className={`flex min-h-[48px] items-center justify-end text-right border-b border-hairline/60 last:border-b-0 text-[0.75rem] font-semibold tracking-[0.08em] uppercase transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus ${
                       active
                         ? 'text-ink'
                         : 'text-muted hover:text-ink'

@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, useMotionValue } from 'motion/react';
+import { useAccessibility } from '../context/AccessibilityContext';
 
 type CursorMode = 'default' | 'pointer' | 'project';
 
@@ -42,11 +43,12 @@ function resolveCursorMode(target: EventTarget | null): CursorMode {
 }
 
 export const CustomCursor: React.FC<CustomCursorProps> = ({ route }) => {
+  const { settings } = useAccessibility();
   const [enabled, setEnabled] = useState(false);
   const [visible, setVisible] = useState(false);
   const [pressed, setPressed] = useState(false);
   const [mode, setMode] = useState<CursorMode>('default');
-  const [reducedMotion, setReducedMotion] = useState(false);
+  const [systemReducedMotion, setSystemReducedMotion] = useState(false);
 
   const visibleRef = useRef(false);
   const pressedRef = useRef(false);
@@ -65,7 +67,7 @@ export const CustomCursor: React.FC<CustomCursorProps> = ({ route }) => {
 
     const syncEnvironment = () => {
       setEnabled(finePointerQuery.matches);
-      setReducedMotion(motionQuery.matches);
+      setSystemReducedMotion(motionQuery.matches);
     };
 
     syncEnvironment();
@@ -216,6 +218,7 @@ export const CustomCursor: React.FC<CustomCursorProps> = ({ route }) => {
     return null;
   }
 
+  const reducedMotion = settings.reduceMotion || systemReducedMotion;
   // Base circle is 32px; animate GPU-composited scale only (16px / 24px / 28px / 32px)
   const scale = pressed ? 0.5 : mode === 'project' ? 1 : mode === 'pointer' ? 0.875 : 0.75;
 

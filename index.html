@@ -141,20 +141,6 @@
       href="%BASE_URL%assets/apple-touch-icon.png"
     />
     <link rel="manifest" href="%BASE_URL%site.webmanifest" />
-    <link
-      rel="preload"
-      as="font"
-      type="font/woff2"
-      href="%BASE_URL%fonts/Grith.woff2"
-      crossorigin
-    />
-    <link
-      rel="preload"
-      as="image"
-      type="image/webp"
-      href="%BASE_URL%assets/wellbe-home-1604.webp"
-      fetchpriority="high"
-    />
     <link rel="dns-prefetch" href="https://wellbe-mobile.micahsamter.com" />
     <link rel="dns-prefetch" href="https://wellbe-watch.micahsamter.com" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -164,18 +150,72 @@
       rel="stylesheet"
     />
     <script>
-      try {
-        var s = JSON.parse(localStorage.getItem('ms-accessibility-v1') || 'null');
-        if (s && typeof s === 'object') {
-          var r = document.documentElement;
-          if (s.theme === 'dark' || s.theme === 'high-contrast') r.setAttribute('data-a11y-theme', s.theme);
-          if (s.textScale === '112' || s.textScale === '125') r.setAttribute('data-a11y-text', s.textScale);
-          if (s.readingSpacing) r.setAttribute('data-a11y-spacing', 'true');
-          if (s.readableFont) r.setAttribute('data-a11y-readable-font', 'true');
-          if (s.reduceMotion) r.setAttribute('data-a11y-reduced-motion', 'true');
-          if (s.highlightLinks) r.setAttribute('data-a11y-links', 'true');
+      (function () {
+        var base = '%BASE_URL%';
+        var path = window.location.pathname || '/';
+        if (base !== '/' && path.indexOf(base) === 0) {
+          path = '/' + path.slice(base.length);
         }
-      } catch (e) {}
+        path = path.replace(/\/+$/, '') || '/';
+        var lower = path.toLowerCase();
+        var head = document.head;
+        var readableFont = false;
+
+        try {
+          var s = JSON.parse(localStorage.getItem('ms-accessibility-v1') || 'null');
+          if (s && typeof s === 'object') {
+            var r = document.documentElement;
+            if (s.theme === 'dark' || s.theme === 'high-contrast') {
+              r.setAttribute('data-a11y-theme', s.theme);
+              var tm = head.querySelector('meta[name="theme-color"]');
+              if (tm) tm.setAttribute('content', s.theme === 'dark' ? '#121211' : '#FFFFFF');
+            }
+            if (s.textScale === '112' || s.textScale === '125') r.setAttribute('data-a11y-text', s.textScale);
+            if (s.readingSpacing) r.setAttribute('data-a11y-spacing', 'true');
+            if (s.readableFont) {
+              r.setAttribute('data-a11y-readable-font', 'true');
+              readableFont = true;
+            }
+            if (s.reduceMotion) r.setAttribute('data-a11y-reduced-motion', 'true');
+            if (s.highlightLinks) r.setAttribute('data-a11y-links', 'true');
+          }
+        } catch (e) {}
+
+        var addPreload = function (attrs) {
+          var link = document.createElement('link');
+          link.rel = 'preload';
+          for (var k in attrs) link.setAttribute(k, attrs[k]);
+          head.appendChild(link);
+        };
+
+        if (path === '/' || path === '/index.html') {
+          if (!readableFont) {
+            addPreload({
+              as: 'font',
+              type: 'font/woff2',
+              href: base + 'fonts/Grith.woff2',
+              crossorigin: '',
+            });
+          }
+          addPreload({
+            as: 'image',
+            type: 'image/webp',
+            href: base + 'assets/wellbe-home-1604.webp',
+            fetchpriority: 'high',
+          });
+        } else if (
+          lower === '/work' ||
+          lower === '/work/wellbe' ||
+          lower === '/work/holistic-mental-health'
+        ) {
+          addPreload({
+            as: 'image',
+            type: 'image/webp',
+            href: base + 'assets/wellbe-work-1604.webp',
+            fetchpriority: 'high',
+          });
+        }
+      })();
     </script>
   </head>
   <body class="bg-alabaster text-ink antialiased selection:bg-accent-bg selection:text-accent-fg">

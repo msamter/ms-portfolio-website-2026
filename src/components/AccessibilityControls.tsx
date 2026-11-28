@@ -184,18 +184,18 @@ export const AccessibilityControls: React.FC = () => {
             : 'Accessibility settings'
         }
         title="Accessibility settings (Alt+A)"
-        className={`fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] right-[calc(1rem+env(safe-area-inset-right))] z-40 inline-flex h-[44px] min-w-[44px] items-center justify-center gap-1.5 rounded-[8px] border px-3 shadow-[0_8px_24px_-12px_rgba(14,14,14,0.22)] transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus sm:bottom-[calc(1.25rem+env(safe-area-inset-bottom))] sm:right-[calc(1.25rem+env(safe-area-inset-right))] ${
+        className={`fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] right-[calc(1rem+env(safe-area-inset-right))] z-40 inline-flex min-h-[44px] min-w-[44px] items-center justify-center gap-1.5 rounded-[8px] border px-3 py-2 shadow-[0_8px_24px_-12px_rgba(14,14,14,0.22)] transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus sm:bottom-[calc(1.25rem+env(safe-area-inset-bottom))] sm:right-[calc(1.25rem+env(safe-area-inset-right))] ${
           hasCustomizations
             ? 'border-accent-bg bg-accent-bg text-accent-fg hover:bg-accent-bg-hover'
             : 'border-hairline bg-surface text-ink hover:bg-stage'
         }`}
       >
         <AccessibilityMark size={18} className="shrink-0" />
-        <span className="hidden sm:inline text-[11px] font-semibold uppercase tracking-[0.08em] whitespace-nowrap">
+        <span className="hidden sm:inline text-[0.6875rem] font-semibold uppercase tracking-[0.08em] whitespace-nowrap">
           Accessibility
         </span>
         {hasCustomizations && (
-          <span className="text-[11px] font-semibold tabular-nums whitespace-nowrap">
+          <span className="text-[0.6875rem] font-semibold tabular-nums whitespace-nowrap">
             ({activeCount})
           </span>
         )}
@@ -281,7 +281,7 @@ export const AccessibilityControls: React.FC = () => {
                               `${option.label} appearance selected.`
                             )
                           }
-                          className={`min-h-[40px] rounded-[6px] px-2 py-2 text-center text-[0.75rem] sm:text-[0.78125rem] font-semibold leading-tight transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus ${
+                          className={`min-h-[44px] rounded-[6px] px-2 py-2 text-center text-[0.75rem] sm:text-[0.78125rem] font-semibold leading-tight transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus ${
                             selected
                               ? 'bg-accent-bg text-accent-fg'
                               : 'text-ink hover:bg-surface/70'
@@ -317,7 +317,7 @@ export const AccessibilityControls: React.FC = () => {
                               `Text size set to ${option.label}.`
                             )
                           }
-                          className={`min-h-[40px] rounded-[6px] px-2 py-2 text-[0.8125rem] font-semibold tabular-nums whitespace-nowrap transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus ${
+                          className={`min-h-[44px] rounded-[6px] px-2 py-2 text-[0.8125rem] font-semibold tabular-nums whitespace-nowrap transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus ${
                             selected
                               ? 'bg-accent-bg text-accent-fg'
                               : 'text-ink hover:bg-surface/70'
@@ -419,7 +419,7 @@ export const AccessibilityControls: React.FC = () => {
                   type="button"
                   onClick={resetSettings}
                   disabled={!hasCustomizations}
-                  className="ml-auto inline-flex min-h-[40px] items-center gap-1.5 rounded-[6px] border border-hairline bg-surface px-3.5 py-2 text-[0.75rem] font-semibold uppercase tracking-[0.06em] text-ink whitespace-nowrap transition-colors duration-150 hover:bg-stage disabled:opacity-45 disabled:cursor-not-allowed focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                  className="ml-auto inline-flex min-h-[44px] items-center gap-1.5 rounded-[6px] border border-hairline bg-surface px-3.5 py-2 text-[0.75rem] font-semibold uppercase tracking-[0.06em] text-ink whitespace-nowrap transition-colors duration-150 hover:bg-stage disabled:opacity-45 disabled:cursor-not-allowed focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
                 >
                   <RotateCcw size={13} strokeWidth={1.75} aria-hidden="true" />
                   <span>Reset Defaults</span>

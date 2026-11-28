@@ -172,13 +172,18 @@ function usePrototypeLifecycle(containerRef: React.RefObject<HTMLElement | null>
     return () => observer.disconnect();
   }, [containerRef, status, startAttempt]);
 
-  // Fall back gracefully if a cross-origin embed is blocked or times out silently
+  // Fall back gracefully if a cross-origin embed is blocked, drops offline, or times out silently
   useEffect(() => {
     if (status !== 'loading') return;
+    const handleOffline = () => setStatus('fallback');
+    window.addEventListener('offline', handleOffline);
     const timer = window.setTimeout(() => {
       setStatus('fallback');
     }, PROTOTYPE_LOAD_TIMEOUT_MS);
-    return () => window.clearTimeout(timer);
+    return () => {
+      window.removeEventListener('offline', handleOffline);
+      window.clearTimeout(timer);
+    };
   }, [status, reloadKey]);
 
   // Recover automatically if the user regains connectivity while viewing the fallback mockup
@@ -242,7 +247,7 @@ const DemoUtilityBar: React.FC<DemoUtilityBarProps> = React.memo(
             type="button"
             onClick={onReset}
             aria-label={resetAriaLabel}
-            className="inline-flex min-h-[44px] items-center gap-1.5 text-[11px] sm:text-[11.5px] font-semibold uppercase tracking-[0.08em] text-muted transition-colors duration-150 hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+            className="inline-flex min-h-[44px] items-center gap-1.5 text-[0.6875rem] sm:text-[0.71875rem] font-semibold uppercase tracking-[0.08em] text-muted transition-colors duration-150 hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
           >
             <RotateCcw size={13} strokeWidth={1.75} aria-hidden="true" />
             <span>Reset Demo</span>
@@ -255,7 +260,7 @@ const DemoUtilityBar: React.FC<DemoUtilityBarProps> = React.memo(
             onAuxClick={(e) => {
               if (e.button === 1) handleExternalOpen();
             }}
-            className="group inline-flex min-h-[44px] items-center gap-1.5 text-[11px] sm:text-[11.5px] font-semibold uppercase tracking-[0.08em] text-ink editorial-underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+            className="group inline-flex min-h-[44px] items-center gap-1.5 text-[0.6875rem] sm:text-[0.71875rem] font-semibold uppercase tracking-[0.08em] text-ink editorial-underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
           >
             <span>Open Fullscreen</span>
             <ArrowUpRight
@@ -287,7 +292,7 @@ const PrototypeLoadingOverlay: React.FC<{
           variant === 'watch' ? 'rounded-full px-8' : 'px-6'
         }`}
       >
-        <span className="font-sans text-[12.5px] font-medium tracking-[0.02em] text-muted">
+        <span className="font-sans text-[0.78125rem] font-medium tracking-[0.02em] text-muted">
           {label}
         </span>
       </div>
@@ -306,7 +311,7 @@ const PrototypeLoadingOverlay: React.FC<{
     >
       <span
         className={`rounded-[4px] border border-white/15 bg-[#0E0E0E]/88 font-sans font-medium tracking-[0.03em] text-[#F4F1EC] ${
-          variant === 'watch' ? 'px-2.5 py-1 text-[10.5px]' : 'px-3 py-1.5 text-[11px]'
+          variant === 'watch' ? 'px-2.5 py-1 text-[0.65625rem]' : 'px-3 py-1.5 text-[0.6875rem]'
         }`}
       >
         {label}
@@ -417,6 +422,9 @@ const MobilePrototypeDemo: React.FC<{ item: LivePrototypeItem }> = React.memo(
                     height={iframeHeight}
                     sandbox={IFRAME_SANDBOX}
                     allow={IFRAME_ALLOW}
+                    referrerPolicy="strict-origin-when-cross-origin"
+                    tabIndex={isIframeVisible ? undefined : -1}
+                    aria-hidden={!isIframeVisible || undefined}
                     onLoad={handleLoad}
                     onError={handleError}
                     style={iframeStyle}
@@ -430,7 +438,11 @@ const MobilePrototypeDemo: React.FC<{ item: LivePrototypeItem }> = React.memo(
               </div>
             </div>
 
-            <p className="mt-5 max-w-[44ch] px-1 text-center text-[0.8125rem] sm:text-[0.84375rem] leading-[1.5] text-muted">
+            <p
+              role={status === 'fallback' ? 'status' : undefined}
+              aria-live={status === 'fallback' ? 'polite' : undefined}
+              className="mt-5 max-w-[44ch] px-1 text-center text-[0.8125rem] sm:text-[0.84375rem] leading-[1.5] text-muted"
+            >
               {captionText}
             </p>
           </div>
@@ -542,6 +554,9 @@ const WatchPrototypeDemo: React.FC<{ item: LivePrototypeItem }> = React.memo(
                       height={WATCH_IFRAME_H}
                       sandbox={IFRAME_SANDBOX}
                       allow={IFRAME_ALLOW}
+                      referrerPolicy="strict-origin-when-cross-origin"
+                      tabIndex={isIframeVisible ? undefined : -1}
+                      aria-hidden={!isIframeVisible || undefined}
                       onLoad={handleLoad}
                       onError={handleError}
                       style={iframeStyle}
@@ -556,7 +571,11 @@ const WatchPrototypeDemo: React.FC<{ item: LivePrototypeItem }> = React.memo(
               </div>
             </div>
 
-            <p className="mt-5 sm:mt-6 max-w-[44ch] px-1 text-center text-[0.8125rem] sm:text-[0.84375rem] leading-[1.5] text-muted">
+            <p
+              role={status === 'fallback' ? 'status' : undefined}
+              aria-live={status === 'fallback' ? 'polite' : undefined}
+              className="mt-5 sm:mt-6 max-w-[44ch] px-1 text-center text-[0.8125rem] sm:text-[0.84375rem] leading-[1.5] text-muted"
+            >
               {captionText}
             </p>
           </div>

@@ -62,7 +62,7 @@ export const Footer: React.FC<FooterProps> = React.memo(({ onEmailClick }) => {
               e.preventDefault();
               onEmailClick();
             }}
-            className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center gap-1.5 px-2 text-[11.5px] font-semibold uppercase tracking-[0.08em] text-ink editorial-underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-focus whitespace-nowrap"
+            className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center gap-1.5 px-2 text-[0.71875rem] font-semibold uppercase tracking-[0.08em] text-ink editorial-underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-focus whitespace-nowrap"
           >
             <ProtonMailIcon size={14} strokeWidth={1.75} className="shrink-0" />
             <span>EMAIL</span>
@@ -90,7 +90,7 @@ export const Footer: React.FC<FooterProps> = React.memo(({ onEmailClick }) => {
                 interaction: 'open',
               });
             }}
-            className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center gap-1.5 px-2 text-[11.5px] font-semibold uppercase tracking-[0.08em] text-ink editorial-underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-focus whitespace-nowrap"
+            className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center gap-1.5 px-2 text-[0.71875rem] font-semibold uppercase tracking-[0.08em] text-ink editorial-underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-focus whitespace-nowrap"
           >
             <Linkedin size={14} strokeWidth={1.75} className="shrink-0" aria-hidden="true" />
             <span>LINKEDIN</span>
@@ -118,7 +118,7 @@ export const Footer: React.FC<FooterProps> = React.memo(({ onEmailClick }) => {
                 interaction: 'open',
               });
             }}
-            className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center gap-1.5 px-2 text-[11.5px] font-semibold uppercase tracking-[0.08em] text-ink editorial-underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-focus whitespace-nowrap"
+            className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center gap-1.5 px-2 text-[0.71875rem] font-semibold uppercase tracking-[0.08em] text-ink editorial-underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-focus whitespace-nowrap"
           >
             <Github size={14} strokeWidth={1.75} className="shrink-0" aria-hidden="true" />
             <span>GITHUB</span>
@@ -126,7 +126,7 @@ export const Footer: React.FC<FooterProps> = React.memo(({ onEmailClick }) => {
         </nav>
 
         {/* Quiet Copyright Notice */}
-        <p className="mt-10 text-[11.5px] font-normal tracking-[0.04em] text-muted tabular-nums">
+        <p className="mt-10 text-[0.71875rem] font-normal tracking-[0.04em] text-muted tabular-nums">
           &copy; Micah Samter 2026
         </p>
       </div>
